@@ -6,7 +6,7 @@ This code deploys the alb and the ecs fargate instances below. It also deploys a
 
 You will also need to move the logic for database into the container. the role is set up with appropriate permissions to access the database.
 
-Please use role based access for mongo db and do not use username/password or accesskey/secret key
+Please use role based access for mongo db and do not use username/password or accesskey/secret key. The mongo code is not tested and will have to be configured. but it is an example of what i would want to see. https://www.gridcog.com/software-blog/connecting-to-mongodb-atlas-in-lambdas-with-iam-roles
 
 Role: madhouse-ecs-role
 
