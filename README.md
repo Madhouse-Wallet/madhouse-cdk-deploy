@@ -6,6 +6,9 @@ This code deploys the alb and the ecs fargate instances below. It also deploys a
 
 You will also need to move the logic for database into the container. the role is set up with appropriate permissions to access the database.
 
+Please use role based access for mongo db and do not use username/password or accesskey/secret key
+
+Role: madhouse-ecs-role
 
 To deploy cdk first get access/secret key from account,
 
@@ -21,4 +24,4 @@ Please make a seperate stack for deploying to staging than deploying to producti
 Currently the endpoint for the alb is here (this is where the website will be hosted): http://madhou-farga-bhuxiphuivog-1554526068.us-east-1.elb.amazonaws.com/
 
 
-![alt text](image.png)
+![alt text](image-1.png)
