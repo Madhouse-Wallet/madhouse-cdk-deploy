@@ -17,7 +17,7 @@ To deploy cdk first get access/secret key from account,
 3. npm install
 4. npm run build //builds project and checks for changes in docker file.
 5. cdk diff //explains what will be deployed 
-6. cdk deploy // deploys cdk code.
+6. cdk deploy "stack" // deploys cdk cfn stack identified (options: dev, uat, madhouse)
 
 Please make a seperate stack for deploying to staging than deploying to production. 
 
