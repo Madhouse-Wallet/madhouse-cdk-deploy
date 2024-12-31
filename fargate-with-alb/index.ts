@@ -47,12 +47,12 @@ class MadhouseFargate extends cdk.Stack {
     // Instantiate Fargate Service with just cluster and image
     new ecs_patterns.ApplicationLoadBalancedFargateService(this, "fargate-service", {
       cluster,
-      /*
-        memoryLimitMiB: 2048,
+      
+        memoryLimitMiB: 8192,
         desiredCount: 1,
         cpu: 2048,
-        ephemeralStorageGiB: 5,
-        */
+        ephemeralStorageGiB: 30,
+        
       assignPublicIp: true,
       listenerPort: 443,
       redirectHTTP: true,
@@ -82,6 +82,9 @@ class MadhouseFargate extends cdk.Stack {
       taskImageOptions: {
         image: ecs.ContainerImage.fromDockerImageAsset(
           new DockerImageAsset(this, 'madhouse-image', {
+          buildArgs:{
+            BRANCH:'main'
+          },
           directory: './docker',
           assetName: 'madhouse-image',
           file: 'Dockerfile'
