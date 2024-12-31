@@ -1,7 +1,6 @@
 # Step 1: Use the official Node.js image as the base image
 FROM ubuntu:latest
-
-ARG TOKEN
+ARG BRANCH
 # Step 2: Install necessary dependencies: curl, bash, git, and GitHub CLI
 RUN apt update && apt install -y curl gpg git
 
@@ -25,10 +24,10 @@ RUN corepack enable pnpm
 
 # Step 4: Authenticate with GitHub (if needed for private repos)
 # You will need to authenticate with an otp code to proceed
-RUN echo $TOKEN | gh auth login --with-token
+RUN gh auth login --with-token
 
 # Step 5: Clone the repository using GitHub CLI
-RUN gh repo clone "Madhouse-Wallet/wallet-frontend" /app
+RUN gh repo clone 'Madhouse-Wallet/wallet-frontend' /app -- --branch ${BRANCH} 
 
 # Step 6: Set the working directory to the cloned repository
 WORKDIR /app
@@ -37,7 +36,7 @@ WORKDIR /app
 RUN pnpm i
 
 # Step 9: Expose port 80 for the application
-EXPOSE 3000
+EXPOSE 80
 
 # Step 10: Start the Next.js application in production mode on port 80
-CMD ["pnpm", "dev"]
+CMD pnpm dev --port 80

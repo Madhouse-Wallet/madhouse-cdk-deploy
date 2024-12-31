@@ -5,7 +5,7 @@ This file basically downloads github cli and pulls the code to be built. The mai
 The only command to run is this here:
 madhouse-cdk-deploy\fargate-with-alb\docker> 
 
- docker build --build-arg TOKEN=myGHaccessToken -t wallet-frontend .
+ docker build --build-arg BRANCH=branch-to-deploy -t wallet-frontend .
 
 I then launch the image from docker desktop. 
 
