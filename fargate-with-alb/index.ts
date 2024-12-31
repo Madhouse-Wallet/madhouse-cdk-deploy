@@ -47,6 +47,12 @@ class MadhouseFargate extends cdk.Stack {
     // Instantiate Fargate Service with just cluster and image
     new ecs_patterns.ApplicationLoadBalancedFargateService(this, "fargate-service", {
       cluster,
+      /*
+        memoryLimitMiB: 2048,
+        desiredCount: 1,
+        cpu: 2048,
+        ephemeralStorageGiB: 50,
+        */
       assignPublicIp: true,
       listenerPort: 443,
       redirectHTTP: true,
