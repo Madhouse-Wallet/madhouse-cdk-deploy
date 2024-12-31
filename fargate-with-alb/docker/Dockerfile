@@ -14,7 +14,6 @@ RUN apt update && apt install -y gh;
 
 # Step 4: Install nodejs
 ENV NODE_VERSION=22.12.0
-RUN apt install -y curl
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
 ENV NVM_DIR=/root/.nvm
 RUN . "$NVM_DIR/nvm.sh" && nvm install ${NODE_VERSION}
