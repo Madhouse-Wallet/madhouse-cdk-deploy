@@ -4,7 +4,7 @@ FROM ubuntu:latest
 # This is the branch that will be used when building the code from wallet-frontend
 ARG BRANCH
 
-# Step 2: Install necessary dependencies: curl, bash, git, and GitHub CLI
+# Step 2: Install necessary dependencies: curl, gpg, git 
 RUN apt update && apt install -y curl gpg git
 
 # Step 3: Install GitHub CLI
