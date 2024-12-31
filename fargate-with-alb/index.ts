@@ -48,7 +48,17 @@ class MadhouseFargate extends cdk.Stack {
     new ecs_patterns.ApplicationLoadBalancedFargateService(this, "fargate-service", {
       cluster,
       assignPublicIp: true,
-      listenerPort:80,
+      listenerPort: 443,
+      redirectHTTP: true,
+      certificate:cdk.aws_certificatemanager.Certificate.fromCertificateArn(this,
+        'madhouse-cert','arn:aws:acm:us-east-1:145023121234:certificate/c934442e-84ed-4682-8a9d-eed1886a3ea4' ),
+      domainName: 'app.madhousewallet.com',
+      domainZone: cdk.aws_route53.HostedZone.fromLookup(this,
+        'madhouse-hostedzone',{domainName: 'madhousewallet.com',
+          
+         }
+      ),
+      protocol:cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS,
       securityGroups:[        
         ec2.SecurityGroup.fromSecurityGroupId(this, 'madhouse-ecs-sg', 'sg-01cd17c4e6b52b54f', {
         mutable: true
@@ -80,6 +90,10 @@ class MadhouseFargate extends cdk.Stack {
 
 const app = new cdk.App();
 
-new MadhouseFargate(app, 'madhouse');
+new MadhouseFargate(app, 'madhouse',{
+  env: {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: process.env.CDK_DEFAULT_REGION
+}});
 
 app.synth();

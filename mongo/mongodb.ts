@@ -24,7 +24,7 @@ export const getMongoClientWithIAMRole = async () => {
   }
   const { Credentials } = await sts
     .assumeRole({
-      RoleArn: ACCESS_ROLE_ARN
+      RoleArn: ACCESS_ROLE_ARN,
       RoleSessionName: 'AccessMongoDB',
     })
     .promise();

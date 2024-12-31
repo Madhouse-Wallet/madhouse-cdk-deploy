@@ -21,7 +21,7 @@ To deploy cdk first get access/secret key from account,
 
 Please make a seperate stack for deploying to staging than deploying to production. 
 
-Currently the endpoint for the alb is here (this is where the website will be hosted): http://madhou-farga-bhuxiphuivog-1554526068.us-east-1.elb.amazonaws.com/
+Currently the endpoint for the alb is here (this is where the website will be hosted): https://app.madhousewallet.com/
 
 
 ![alt text](image-1.png)
