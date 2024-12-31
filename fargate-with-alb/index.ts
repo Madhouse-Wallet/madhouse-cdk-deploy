@@ -6,9 +6,11 @@ import { DockerImageAsset } from 'aws-cdk-lib/aws-ecr-assets';
 import ecs_patterns = require('aws-cdk-lib/aws-ecs-patterns');
 import cdk = require('aws-cdk-lib');
 
+
 class MadhouseFargate extends cdk.Stack {
   constructor(scope: cdk.App, id: string ,branch: string,
     cert: string, _domainName: string,
+    _protocol: cdk.aws_elasticloadbalancingv2.ApplicationProtocol,
     props?: cdk.StackProps, _name?: string) {
     super(scope, id, props);
     
@@ -48,64 +50,92 @@ class MadhouseFargate extends cdk.Stack {
 
   repository.grantPull(ecsRole);
 
-    // Instantiate Fargate Service with just cluster and image
-    new ecs_patterns.ApplicationLoadBalancedFargateService(this, `fargate-service${name}`, {
-      cluster,
-      
+ const _taskImageOptions = {
+    image: ecs.ContainerImage.fromDockerImageAsset(
+      new DockerImageAsset(this, `madhouse-image${name}`, {
+      buildArgs:{
+        BRANCH: branch
+      },
+      directory: './docker',
+      assetName: 'madhouse-image',
+      file: 'Dockerfile'
+    })),
+    taskRole:  ecsRole,
+    executionRole:  ecsRole, 
+  }
+
+  const _taskSubnets ={
+    subnets: [
+      ec2.Subnet.fromSubnetId(this, 'pub-subnet-1', 'subnet-0d6ef10031ae3e8c0'),
+      ec2.Subnet.fromSubnetId(this, 'pub-subnet-2', 'subnet-0d492e0e7f00f983e'),
+    ]
+  }
+
+  const _securityGroups = [        
+    ec2.SecurityGroup.fromSecurityGroupId(this, 'madhouse-ecs-sg', 'sg-01cd17c4e6b52b54f', {
+    mutable: true
+  }),
+  ec2.SecurityGroup.fromSecurityGroupId(this, 'madhouse-alb-sg', 'sg-04eafa4a188f6a837', {
+    mutable: true
+  }),
+]
+if(_protocol === cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS){
+      const serviceProps = {
+        cluster,
+        
         memoryLimitMiB: 8192,
         desiredCount: 1,
         cpu: 2048,
         ephemeralStorageGiB: 30,
-        
-      assignPublicIp: true,
-      listenerPort: 443,
-      redirectHTTP: true,
-      certificate:cdk.aws_certificatemanager.Certificate.fromCertificateArn(this,
-        'madhouse-cert',cert ),
-      domainName: _domainName,
-      domainZone: cdk.aws_route53.HostedZone.fromLookup(this,
-        'madhouse-hostedzone',{domainName: 'madhousewallet.com',
           
-         }
-      ),
-      protocol:cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS,
-      securityGroups:[        
-        ec2.SecurityGroup.fromSecurityGroupId(this, 'madhouse-ecs-sg', 'sg-01cd17c4e6b52b54f', {
-        mutable: true
-      }),
-      ec2.SecurityGroup.fromSecurityGroupId(this, 'madhouse-alb-sg', 'sg-04eafa4a188f6a837', {
-        mutable: true
-      }),
-    ],
-      taskSubnets: {
-        subnets: [
-          ec2.Subnet.fromSubnetId(this, 'pub-subnet-1', 'subnet-0d6ef10031ae3e8c0'),
-          ec2.Subnet.fromSubnetId(this, 'pub-subnet-2', 'subnet-0d492e0e7f00f983e'),
-        ]
-      },
-      taskImageOptions: {
-        image: ecs.ContainerImage.fromDockerImageAsset(
-          new DockerImageAsset(this, `madhouse-image${name}`, {
-          buildArgs:{
-            BRANCH: branch
-          },
-          directory: './docker',
-          assetName: 'madhouse-image',
-          file: 'Dockerfile'
-        })),
-        taskRole:  ecsRole,
-        executionRole:  ecsRole, 
-      },
-    });
+        assignPublicIp: true,
+        listenerPort: 443,
+        redirectHTTP: true,
+        certificate:cdk.aws_certificatemanager.Certificate.fromCertificateArn(this,
+          'madhouse-cert',cert ),
+        domainName: _domainName,
+        domainZone: cdk.aws_route53.HostedZone.fromLookup(this,
+          'madhouse-hostedzone',{domainName: 'madhousewallet.com',
+            
+          }
+        ),
+        protocol: _protocol,
+        securityGroups:_securityGroups,
+        taskSubnets: _taskSubnets,
+        taskImageOptions: _taskImageOptions,
+      }
+    new ecs_patterns.ApplicationLoadBalancedFargateService(this, `fargate-service${name}`,serviceProps );
+
+    }else if(_protocol === cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTP){
+       const serviceProps = {
+          cluster,
+          
+          memoryLimitMiB: 8192,
+          desiredCount: 1,
+          cpu: 2048,
+          ephemeralStorageGiB: 30,
+            
+          assignPublicIp: true,
+          listenerPort: 80,
+          redirectHTTP: false,
+          protocol: _protocol,
+          securityGroups:_securityGroups,
+          taskSubnets: _taskSubnets,
+          taskImageOptions: _taskImageOptions,
+        }
+        new ecs_patterns.ApplicationLoadBalancedFargateService(this, `fargate-service${name}`,serviceProps );
+      }
+    // Instantiate Fargate Service with just cluster and image
+    
   }
 }
-
 
 const app = new cdk.App();
 
 new MadhouseFargate(app, 'madhouse','main',
   'arn:aws:acm:us-east-1:145023121234:certificate/c934442e-84ed-4682-8a9d-eed1886a3ea4',
-  'app.madhousewallet.com'
+  'app.madhousewallet.com',
+  cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS
   ,{
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
@@ -116,6 +146,7 @@ new MadhouseFargate(app, 'madhouse','main',
 new MadhouseFargate(app, 'uat','staging',
   'arn:aws:acm:us-east-1:145023121234:certificate/5ca28edf-5484-4485-8b0a-ee84f1e61a80',
   'staging.madhousewallet.com',
+  cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS,
   {
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
@@ -123,6 +154,18 @@ new MadhouseFargate(app, 'uat','staging',
       }},
       
       'staging');
+
+new MadhouseFargate(app, 'dev','main',
+  '',
+  '',
+  cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTP,
+  {
+  env: {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: process.env.CDK_DEFAULT_REGION
+      }},
+      
+      'dev');
 
 
 app.synth();
