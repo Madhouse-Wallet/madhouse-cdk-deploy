@@ -1,8 +1,7 @@
-ARG token
-
 # Step 1: Use the official Node.js image as the base image
 FROM ubuntu:latest
 
+ARG TOKEN
 # Step 2: Install necessary dependencies: curl, bash, git, and GitHub CLI
 RUN apt update && apt install -y curl gpg git
 
@@ -26,7 +25,7 @@ RUN corepack enable pnpm
 
 # Step 4: Authenticate with GitHub (if needed for private repos)
 # You will need to authenticate with an otp code to proceed
-RUN $token | gh auth login --with-token
+RUN $TOKEN | gh auth login --with-token
 
 # Step 5: Clone the repository using GitHub CLI
 RUN gh repo clone "Madhouse-Wallet/wallet-frontend" /app
