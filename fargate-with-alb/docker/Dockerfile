@@ -25,7 +25,7 @@ RUN corepack enable pnpm
 
 # Step 4: Authenticate with GitHub (if needed for private repos)
 # You will need to authenticate with an otp code to proceed
-RUN $TOKEN | gh auth login --with-token
+RUN echo $TOKEN | gh auth login --with-token
 
 # Step 5: Clone the repository using GitHub CLI
 RUN gh repo clone "Madhouse-Wallet/wallet-frontend" /app
