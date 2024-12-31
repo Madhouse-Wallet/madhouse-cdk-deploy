@@ -51,7 +51,7 @@ class MadhouseFargate extends cdk.Stack {
         memoryLimitMiB: 2048,
         desiredCount: 1,
         cpu: 2048,
-        ephemeralStorageGiB: 50,
+        ephemeralStorageGiB: 5,
         */
       assignPublicIp: true,
       listenerPort: 443,
