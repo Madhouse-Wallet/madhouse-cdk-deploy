@@ -51,7 +51,7 @@ class MadhouseFargate extends cdk.Stack {
       listenerPort: 443,
       redirectHTTP: true,
       certificate:cdk.aws_certificatemanager.Certificate.fromCertificateArn(this,
-        'madhouse-cert','arn:aws:acm:us-east-1:145023121234:certificate/c4d08a34-16b4-4be9-94f4-7071277b9ac9' ),
+        'madhouse-cert','arn:aws:acm:us-east-1:145023121234:certificate/c934442e-84ed-4682-8a9d-eed1886a3ea4' ),
       domainName: 'app.madhousewallet.com',
       domainZone: cdk.aws_route53.HostedZone.fromLookup(this,
         'madhouse-hostedzone',{domainName: 'madhousewallet.com',
