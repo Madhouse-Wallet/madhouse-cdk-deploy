@@ -7,8 +7,12 @@ import ecs_patterns = require('aws-cdk-lib/aws-ecs-patterns');
 import cdk = require('aws-cdk-lib');
 
 class MadhouseFargate extends cdk.Stack {
-  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
+  constructor(scope: cdk.App, id: string ,branch: string,
+    cert: string, _domainName: string,
+    props?: cdk.StackProps, _name?: string) {
     super(scope, id, props);
+    
+    const name = _name || '';
 
     // Create VPC and Fargate Cluster
     // NOTE: Limit AZs to avoid reaching resource quotas
@@ -45,7 +49,7 @@ class MadhouseFargate extends cdk.Stack {
   repository.grantPull(ecsRole);
 
     // Instantiate Fargate Service with just cluster and image
-    new ecs_patterns.ApplicationLoadBalancedFargateService(this, "fargate-service", {
+    new ecs_patterns.ApplicationLoadBalancedFargateService(this, `fargate-service${name}`, {
       cluster,
       
         memoryLimitMiB: 8192,
@@ -57,8 +61,8 @@ class MadhouseFargate extends cdk.Stack {
       listenerPort: 443,
       redirectHTTP: true,
       certificate:cdk.aws_certificatemanager.Certificate.fromCertificateArn(this,
-        'madhouse-cert','arn:aws:acm:us-east-1:145023121234:certificate/c934442e-84ed-4682-8a9d-eed1886a3ea4' ),
-      domainName: 'app.madhousewallet.com',
+        'madhouse-cert',cert ),
+      domainName: _domainName,
       domainZone: cdk.aws_route53.HostedZone.fromLookup(this,
         'madhouse-hostedzone',{domainName: 'madhousewallet.com',
           
@@ -81,9 +85,9 @@ class MadhouseFargate extends cdk.Stack {
       },
       taskImageOptions: {
         image: ecs.ContainerImage.fromDockerImageAsset(
-          new DockerImageAsset(this, 'madhouse-image', {
+          new DockerImageAsset(this, `madhouse-image${name}`, {
           buildArgs:{
-            BRANCH:'main'
+            BRANCH: branch
           },
           directory: './docker',
           assetName: 'madhouse-image',
@@ -99,10 +103,27 @@ class MadhouseFargate extends cdk.Stack {
 
 const app = new cdk.App();
 
-new MadhouseFargate(app, 'madhouse',{
+new MadhouseFargate(app, 'madhouse','main',
+  'arn:aws:acm:us-east-1:145023121234:certificate/c934442e-84ed-4682-8a9d-eed1886a3ea4',
+  'app.madhousewallet.com'
+  ,{
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION
-}});
+      }
+      });
+
+new MadhouseFargate(app, 'uat','staging',
+  'arn:aws:acm:us-east-1:145023121234:certificate/5ca28edf-5484-4485-8b0a-ee84f1e61a80',
+  'staging.madhousewallet.com',
+  {
+  env: {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: process.env.CDK_DEFAULT_REGION
+      }},
+      
+      'staging');
+
 
 app.synth();
+
