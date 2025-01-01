@@ -1,91 +1,59 @@
-name: CICD
+name: scan_deployment
 
 on:
-  push:
-    branches: [ $default-branch ]
   pull_request:
-    branches: [ $default-branch ]
+    branches:
+      - main
 
 jobs:
 
   docker_build:
-    runs-on: ubuntu-latest
-    strategy:
-          matrix:
-            node-version: [18.x, 20.x, 22.x]
-            # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
+    runs-on: self-hosted
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-    - run: npm run build --if-present
-    - run: npm test
-
     - uses: actions/checkout@v4
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      run: docker build -t wallet-frontend . --file fargate-with-alb/docker/Dockerfile
 
-  cdk_diff:
-    runs-on: ubuntu-latest
-    steps:
+  # cdk_diff:
+  #   runs-on: self-hosted
+  #   steps:
+  #     - name: cdk diff
+  #       uses: youyo/aws-cdk-github-actions@v2
+  #       with:
+  #         cdk_subcommand: 'diff'
+  #         actions_comment: true
+  #       env:
+  #         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         AWS_DEFAULT_REGION: 'ap-northeast-1'
 
-      - name: cdk diff
-        uses: youyo/aws-cdk-github-actions@v2
-        with:
-          cdk_subcommand: 'diff'
-          actions_comment: true
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: 'ap-northeast-1'
-
-  Synth:
-    name: Synthesize
-    permissions:
-    contents: read
-    pull-requests: write
-    id-token: write
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-      - name: Synth
-        run: npx cdk synth
-      - name: Authenticate Via OIDC Role
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: us-east-2
-          role-duration-seconds: 1800
-          role-skip-session-tagging: true
-          role-to-assume: arn:aws:iam::1234567891012:role/cdk_github_actions
-          role-session-name: github
-      - name: Diff
-        uses: corymhall/cdk-diff-action@v1
-        with:
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
-  
-  cdk_deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: cdk deploy
-        uses: youyo/aws-cdk-github-actions@v2
-        with:
-          cdk_subcommand: 'deploy'
-          cdk_stack: 'stack1'
-          cdk_args: '--require-approval never'
-          actions_comment: false
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: 'ap-northeast-1'
+  # cdk_diff_pr:
+  #   name: Synthesize
+  #   permissions:
+  #     contents: read
+  #     pull-requests: write
+  #     id-token: write
+  #   runs-on: self-hosted
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #     - name: Setup Node
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 20
+  #     - name: Install dependencies
+  #       run: yarn install --frozen-lockfile
+  #     - name: Synth
+  #       run: npx cdk synth
+  #     - name: Authenticate Via OIDC Role
+  #       uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #         aws-region: us-east-1
+  #         role-duration-seconds: 1800
+  #         role-skip-session-tagging: true
+  #         role-to-assume: arn:aws:iam::1234567891012:role/cdk_github_actions
+  #         role-session-name: github
+  #     - name: Diff
+  #       uses: corymhall/cdk-diff-action@v1
+  #       with:
+  #         githubToken: ${{ secrets.GITHUB_TOKEN }}
