@@ -63,15 +63,11 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: 'us-east-1'
-      - name: Authenticate Via OIDC Role
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: us-east-1
-          role-duration-seconds: 1800
-          role-skip-session-tagging: true
-          role-to-assume: arn:aws:iam::1234567891012:role/cdk_github_actions
-          role-session-name: github
       - name: Diff
         uses: corymhall/cdk-diff-action@v1
         with:
           githubToken: ${{ secrets.GH_TOKEN }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'us-east-1'
