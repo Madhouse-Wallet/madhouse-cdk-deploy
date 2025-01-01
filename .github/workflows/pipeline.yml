@@ -55,6 +55,7 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
       - name: Synth
+        working-directory: fargate-with-alb/
         run: npx cdk synth
       - name: Authenticate Via OIDC Role
         uses: aws-actions/configure-aws-credentials@v4
