@@ -53,7 +53,8 @@ jobs:
         with:
           node-version: 20
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        working-directory: fargate-with-alb/
+        run: npm install && npm run build
       - name: Synth
         working-directory: fargate-with-alb/
         run: npx cdk synth
