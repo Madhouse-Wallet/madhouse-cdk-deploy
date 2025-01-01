@@ -11,7 +11,7 @@ on:
 jobs:
 
   docker_build:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - name: Build the Docker image
@@ -19,7 +19,7 @@ jobs:
       run:  docker build --build-arg BRANCH=main -t wallet-frontend . --file Dockerfile
 
   cdk_diff:    
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps: 
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
