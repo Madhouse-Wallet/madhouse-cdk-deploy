@@ -13,7 +13,7 @@ Role: madhouse-ecs-role
 To deploy cdk first get access/secret key from account,
 
 1. clone repository
-2. cd fargate-with-alb
+2. cd src
 3. npm install
 4. npm run build //builds project and checks for changes in docker file.
 5. cdk diff //explains what will be deployed 
@@ -24,4 +24,4 @@ Please make a seperate stack for deploying to staging than deploying to producti
 Currently the endpoint for the alb is here (this is where the website will be hosted): https://app.madhousewallet.com/
 
 
-![alt text](image-1.png)
+![alt text](image.png)

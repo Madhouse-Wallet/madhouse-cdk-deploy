@@ -5,7 +5,7 @@ This file basically downloads github cli and pulls the code to be built. The mai
 
 
 The only command to run is this here:
-madhouse-cdk-deploy\fargate-with-alb\docker> 
+madhouse-cdk-deploy\src\docker> 
 
 1. The orginal code base must be built on linux and must be deployed via commands in docker file if you want to build locally
 2. Run the following command below: 
