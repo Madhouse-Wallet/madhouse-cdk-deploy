@@ -24,4 +24,4 @@ Please make a seperate stack for deploying to staging than deploying to producti
 Currently the endpoint for the alb is here (this is where the website will be hosted): https://app.madhousewallet.com/
 
 
-![alt text](image-1.png)
+![alt text](image.png)
