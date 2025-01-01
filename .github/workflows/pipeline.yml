@@ -4,19 +4,19 @@ on:
   pull_request:
     branches:
       - main
-  # push:
-  #   branches:
-  #     - github-actions
+  push:
+    branches:
+      - github-actions
 
 jobs:
 
-  # docker_build:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - uses: actions/checkout@v4
-  #   - name: Build the Docker image
-  #     working-directory:  fargate-with-alb/docker/
-  #     run:  docker build --build-arg BRANCH=main -t wallet-frontend . --file Dockerfile
+  docker_build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build the Docker image
+      working-directory:  fargate-with-alb/docker/
+      run:  docker build --build-arg BRANCH=main -t wallet-frontend . --file Dockerfile
 
   cdk_diff:    
     runs-on: ubuntu-latest
