@@ -23,9 +23,9 @@ jobs:
     steps: 
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-      - name: npm_build
-        working-directory:  fargate-with-alb/
-        run:  npm install && npm run build 
+        with:
+          node-version: 22
+      - run:  cd fargate-with-alb/ && npm install && npm run build 
       - name: cdk diff
         uses: youyo/aws-cdk-github-actions@v2
         with:
