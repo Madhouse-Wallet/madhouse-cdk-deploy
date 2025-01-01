@@ -4,70 +4,37 @@ on:
   pull_request:
     branches:
       - main
-  push:
-    branches:
-      - github-actions
+  # push:
+  #   branches:
+  #     - github-actions
 
 jobs:
 
-  # docker_build:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - uses: actions/checkout@v4
-  #   - name: Build the Docker image
-  #     working-directory:  fargate-with-alb/docker/
-  #     run:  docker build --build-arg BRANCH=main -t wallet-frontend . --file Dockerfile
-
-  # cdk_diff:    
-  #   runs-on: ubuntu-latest
-  #   steps: 
-  #     - uses: actions/checkout@v4
-  #     - uses: actions/setup-node@v4
-  #       with:
-  #         node-version: 22
-  #     - run:  cd fargate-with-alb/ && npm install && npm run build 
-  #     - name: cdk diff
-  #       uses: youyo/aws-cdk-github-actions@v2
-  #       with:
-  #         cdk_subcommand: 'diff'
-  #         actions_comment: true
-  #         working_dir: fargate-with-alb/
-  #         cdk_stack: dev
-        # env:
-        #   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        #   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        #   AWS_DEFAULT_REGION: 'us-east-1'
-
-  cdk_diff_pr: 
-    name: Synthesize
-    permissions:
-      contents: read
-      pull-requests: write
-      id-token: write
+  docker_build:
     runs-on: ubuntu-latest
     steps:
-      
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v3
+    - uses: actions/checkout@v4
+    - name: Build the Docker image
+      working-directory:  fargate-with-alb/docker/
+      run:  docker build --build-arg BRANCH=main -t wallet-frontend . --file Dockerfile
+
+  cdk_diff:    
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20
-      - name: Install dependencies
-        working-directory: fargate-with-alb/
-        run: npm install && npm run build
-      - name: Synth
-        working-directory: fargate-with-alb/
-        run: npx cdk synth
+          node-version: 22
+      - run:  cd fargate-with-alb/ && npm install && npm run build 
+      - name: cdk diff
+        uses: youyo/aws-cdk-github-actions@v2
+        with:
+          cdk_subcommand: 'diff'
+          actions_comment: true
+          working_dir: fargate-with-alb/
+          cdk_stack: dev
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: 'us-east-1'
-      - name: Diff
-        uses: corymhall/cdk-diff-action@v1
-        with:
-          githubToken: ${{ secrets.GH_TOKEN }}
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: 'us-east-1'
+
