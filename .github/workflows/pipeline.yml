@@ -32,7 +32,7 @@ jobs:
           working_dir: fargate-with-alb/
           cdk_stack: dev
 
-  # cdk_diff_pr:
+  # cdk_diff_pr: 
   #   name: Synthesize
   #   permissions:
   #     contents: read
