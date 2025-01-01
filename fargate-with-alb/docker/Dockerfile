@@ -9,7 +9,7 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | g
 RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null;
 RUN apt update && apt install -y gh;
 
-ENV NODE_VERSION=22.12.0
+ENV NODE_VERSION=18.20.5
 RUN apt install -y curl
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
 ENV NVM_DIR=/root/.nvm
@@ -19,8 +19,6 @@ RUN . "$NVM_DIR/nvm.sh" && nvm alias default v${NODE_VERSION}
 ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
 RUN node --version
 RUN npm --version
-
-RUN corepack enable pnpm
 
 # Step 4: Authenticate with GitHub (if needed for private repos)
 # You will need to authenticate with an otp code to proceed
@@ -33,10 +31,11 @@ RUN gh repo clone 'Madhouse-Wallet/wallet-frontend' /app -- --branch ${BRANCH}
 WORKDIR /app
 
 # Step 7: Install dependencies for the Next.js application
-RUN pnpm i
+RUN npm install @keep-network/tbtc-v2.ts
+RUN npm install
 
 # Step 9: Expose port 80 for the application
 EXPOSE 80
 
 # Step 10: Start the Next.js application in production mode on port 80
-CMD pnpm dev --port 80
+CMD npm run dev -- --port 80
