@@ -17,7 +17,7 @@ jobs:
     - name: Build the Docker image
       run:  docker build -t wallet-frontend . --file fargate-with-alb/docker/Dockerfile
 
-  # cdk_diff:
+  # cdk_diff:    
   #   runs-on: self-hosted
   #   steps: 
   #     - name: cdk diff
