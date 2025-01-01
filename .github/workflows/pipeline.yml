@@ -33,10 +33,10 @@ jobs:
   #         actions_comment: true
   #         working_dir: fargate-with-alb/
   #         cdk_stack: dev
-  #       env:
-  #         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         AWS_DEFAULT_REGION: 'us-east-1'
+        # env:
+        #   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        #   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        #   AWS_DEFAULT_REGION: 'us-east-1'
 
   cdk_diff_pr: 
     name: Synthesize
@@ -46,6 +46,7 @@ jobs:
       id-token: write
     runs-on: ubuntu-latest
     steps:
+      
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup Node
@@ -58,6 +59,10 @@ jobs:
       - name: Synth
         working-directory: fargate-with-alb/
         run: npx cdk synth
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'us-east-1'
       - name: Authenticate Via OIDC Role
         uses: aws-actions/configure-aws-credentials@v4
         with:
