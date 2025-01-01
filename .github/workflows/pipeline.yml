@@ -15,20 +15,22 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build the Docker image
-      run:  docker build --build-arg BRANCH=main -t wallet-frontend . --file fargate-with-alb/docker/Dockerfile
+      working-directory:  fargate-with-alb/docker/
+      run:  docker build --build-arg BRANCH=main -t wallet-frontend . --file Dockerfile
 
-  # cdk_diff:    
-  #   runs-on: self-hosted
-  #   steps: 
-  #     - name: cdk diff
-  #       uses: youyo/aws-cdk-github-actions@v2
-  #       with:
-  #         cdk_subcommand: 'diff'
-  #         actions_comment: true
-  #       env:
-  #         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         AWS_DEFAULT_REGION: 'ap-northeast-1'
+  cdk_diff:    
+    runs-on: self-hosted
+    steps: 
+      - name: npm_build
+        working-directory:  fargate-with-alb/
+        run:  npm install && npm run build 
+      - name: cdk diff
+        uses: youyo/aws-cdk-github-actions@v2
+        with:
+          cdk_subcommand: 'diff'
+          actions_comment: true
+          working_dir: fargate-with-alb/
+          cdk_stack: dev
 
   # cdk_diff_pr:
   #   name: Synthesize
