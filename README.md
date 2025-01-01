@@ -13,7 +13,7 @@ Role: madhouse-ecs-role
 To deploy cdk first get access/secret key from account,
 
 1. clone repository
-2. cd fargate-with-alb
+2. cd src
 3. npm install
 4. npm run build //builds project and checks for changes in docker file.
 5. cdk diff //explains what will be deployed 

@@ -15,7 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build the Docker image
-      working-directory:  fargate-with-alb/docker/
+      working-directory:  src/docker/
       run:  docker build --build-arg BRANCH=main -t wallet-frontend . --file Dockerfile
 
   cdk_diff:    
@@ -25,13 +25,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run:  cd fargate-with-alb/ && npm install && npm run build 
+      - run:  cd src/ && npm install && npm run build 
       - name: cdk diff
         uses: youyo/aws-cdk-github-actions@v2
         with:
           cdk_subcommand: 'diff'
           actions_comment: true
-          working_dir: fargate-with-alb/
+          working_dir: src/
           cdk_stack: madhouse
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
