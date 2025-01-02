@@ -11,7 +11,7 @@ jobs:
         uses: youyo/aws-cdk-github-actions@v2
         with:
           cdk_subcommand: 'deploy'
-          cdk_stack: ${{ github.event.inputs.stack }}
+          cdk_stack: ${{ vars.STACK }}
           cdk_args: '--require-approval never'
           actions_comment: false
         env:

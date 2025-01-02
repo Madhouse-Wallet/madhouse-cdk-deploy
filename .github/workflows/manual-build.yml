@@ -10,7 +10,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Build the Docker image
       working-directory:  src/docker/
-      run:  docker build --build-arg BRANCH=${{ env.BRANCH }} -t wallet-frontend . --file Dockerfile
+      run:  docker build --build-arg BRANCH=${{ vars.BRANCH }} -t wallet-frontend . --file Dockerfile
 
   cdk_diff:    
     runs-on: ubuntu-latest
@@ -26,7 +26,7 @@ jobs:
           cdk_subcommand: 'diff'
           actions_comment: true
           working_dir: src/
-          cdk_stack: ${{ env.STACK }}
+          cdk_stack: ${{ vars.STACK }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
