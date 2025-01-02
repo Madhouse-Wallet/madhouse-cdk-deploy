@@ -2,19 +2,15 @@ name: manual_build
 
 on:
   workflow_dispatch:
-    inputs:
-      branch:
-        description: 'wallet-frontend branch to build'
-        required: true
-jobs:
 
+jobs:
   docker_build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - name: Build the Docker image
       working-directory:  src/docker/
-      run:  docker build --build-arg BRANCH=${{ github.event.inputs.branch }} -t wallet-frontend . --file Dockerfile
+      run:  docker build --build-arg BRANCH=${{ env.BRANCH }} -t wallet-frontend . --file Dockerfile
 
   cdk_diff:    
     runs-on: ubuntu-latest
@@ -30,7 +26,7 @@ jobs:
           cdk_subcommand: 'diff'
           actions_comment: true
           working_dir: src/
-          cdk_stack: madhouse
+          cdk_stack: ${{ env.STACK }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
