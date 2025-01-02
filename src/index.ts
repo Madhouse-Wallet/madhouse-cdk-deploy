@@ -62,7 +62,8 @@ class MadhouseFargate extends cdk.Stack {
       directory: './docker',
       assetName: 'madhouse-image',
       file: 'Dockerfile',
-      cacheDisabled: true
+      cacheDisabled: true,
+      extraHash: String(Math.floor(Math.random() * (10000 - 1)) + 1)
     })),
     taskRole:  ecsRole,
     executionRole:  ecsRole, 
