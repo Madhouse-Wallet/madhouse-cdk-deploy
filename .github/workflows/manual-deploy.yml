@@ -6,6 +6,7 @@ on:
 jobs:
   cdk_deploy:    
     runs-on: ubuntu-latest
+    environment: dev
     steps: 
       - name: cdk deploy
         uses: youyo/aws-cdk-github-actions@v2
