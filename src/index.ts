@@ -61,7 +61,8 @@ class MadhouseFargate extends cdk.Stack {
       },
       directory: './docker',
       assetName: 'madhouse-image',
-      file: 'Dockerfile'
+      file: 'Dockerfile',
+      cacheDisabled: true
     })),
     taskRole:  ecsRole,
     executionRole:  ecsRole, 
