@@ -1,4 +1,4 @@
-name: scan_deployment
+name: automated_build
 
 on:
   pull_request:
