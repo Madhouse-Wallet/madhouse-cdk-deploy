@@ -2,10 +2,7 @@ name: manual_deploy
 
 on:
   workflow_dispatch:
-    inputs:
-      stack:
-        description: 'wallet-frontend stack to deploy (dev uat madhouse)'
-        required: true
+
 jobs:
   cdk_deploy:    
     runs-on: ubuntu-latest
