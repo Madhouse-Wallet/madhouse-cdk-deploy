@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: 'wallet-frontend branch to deploy'
+        description: 'wallet-frontend branch to build'
         required: true
 jobs:
 

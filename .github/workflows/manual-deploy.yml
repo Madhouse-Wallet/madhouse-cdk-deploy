@@ -1,0 +1,23 @@
+name: manual_deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      stack:
+        description: 'wallet-frontend stack to deploy (dev uat madhouse)'
+        required: true
+jobs:
+  cdk_deploy:    
+    runs-on: ubuntu-latest
+    steps: 
+      - name: cdk deploy
+        uses: youyo/aws-cdk-github-actions@v2
+        with:
+          cdk_subcommand: 'deploy'
+          cdk_stack: ${{ github.event.inputs.stack }}
+          cdk_args: '--require-approval never'
+          actions_comment: false
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AWS_DEFAULT_REGION: 'us-east-1'
