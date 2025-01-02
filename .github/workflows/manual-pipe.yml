@@ -1,4 +1,4 @@
-name: scan_deployment
+name: manual_deployment
 
 on:
   workflow_dispatch:
