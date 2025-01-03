@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
       inputs:
           branch: 
+            description: 'any branch from wallet-frontend repo'
             required: true
 
 env:

@@ -4,8 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       branch: 
+        description: 'any branch from wallet-frontend repo'
         required: true
       stack: 
+        description: 'choices: dev uat madhouse'
         required: true
 
 env:
