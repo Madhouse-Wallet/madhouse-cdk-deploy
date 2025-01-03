@@ -1,14 +1,12 @@
-name: automated_build
+name: cdk_diff_manual
 
 on:
-  pull_request:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   docker_build:
     runs-on: ubuntu-latest
-    environment: dev
+    environment: cdk-diff
     steps:
     - uses: actions/checkout@v4
     - name: Build the Docker image
@@ -17,7 +15,7 @@ jobs:
 
   cdk_diff:    
     runs-on: ubuntu-latest
-    environment: dev
+    environment: cdk-diff
     steps: 
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
