@@ -31,7 +31,7 @@ RUN gh repo clone 'Madhouse-Wallet/wallet-frontend' /app -- --branch ${BRANCH}
 WORKDIR /app
 
 # Step 7: Install dependencies for the Next.js application
-RUN npm install @keep-network/tbtc-v2.ts
+RUN npm install @keep-network/tbtc-v2.ts --legacy-peer-deps
 RUN npm install
 
 # Step 9: Expose port 80 for the application
