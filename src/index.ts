@@ -170,7 +170,7 @@ new MadhouseFargate(app, 'dev',
     region: process.env.CDK_DEFAULT_REGION
       }},
       
-      process.env.BRANCH,'dev');
+      process.env.DEV_BRANCH,'dev');
 
 
 app.synth();

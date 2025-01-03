@@ -1,14 +1,24 @@
-name: manual_dev_deploy
+name: cdk_diff_auto
 
 on:
-  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  cdk_deploy:    
+  docker_build:
     runs-on: ubuntu-latest
-    environment: dev
+    environment: cdk-diff
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build the Docker image
+      working-directory:  src/docker/
+      run:  docker build --build-arg BRANCH=${{ vars.BRANCH }} -t wallet-frontend . --file Dockerfile
+
+  cdk_diff:    
+    runs-on: ubuntu-latest
+    environment: cdk-diff
     steps: 
-      
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -20,24 +30,10 @@ jobs:
           cdk_subcommand: 'diff'
           actions_comment: true
           working_dir: src/
-          cdk_stack: 'dev'
+          cdk_stack: ${{ vars.STACK }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AWS_DEFAULT_REGION: 'us-east-1'
           
-
-      - name: cdk deploy
-        uses: youyo/aws-cdk-github-actions@v2
-        with:
-          cdk_subcommand: 'deploy'
-          working_dir: ./src
-          cdk_stack: 'dev'
-          cdk_args: '--require-approval never'
-          actions_comment: false
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          AWS_DEFAULT_REGION: 'us-east-1'
