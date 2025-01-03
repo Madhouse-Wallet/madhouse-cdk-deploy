@@ -1,4 +1,4 @@
-name: cdk_dev_deploy
+name: cdk_deploy_dev
 
 on:
   workflow_dispatch:
