@@ -9,10 +9,14 @@ on:
       stack: 
         description: 'stack (dev uat madhouse)'
         required: true
+      commit: 
+        description: 'commit (the specific commit that we would like to build)'
+        required: false
 
 env:
   DEV_BRANCH: ${{github.event.inputs.branch}}
   STACK: ${{github.event.inputs.stack}}
+  COMMIT: ${{github.event.inputs.commit}}
 
 jobs:
   docker_build:

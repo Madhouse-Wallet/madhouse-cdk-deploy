@@ -1,6 +1,8 @@
 # Step 1: Use the official Node.js image as the base image
 FROM ubuntu:latest
 ARG BRANCH
+ARG COMMIT=''
+
 # Step 2: Install necessary dependencies: curl, bash, git, and GitHub CLI
 RUN apt update && apt install -y curl gpg git
 
@@ -9,6 +11,7 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | g
 RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null;
 RUN apt update && apt install -y gh;
 
+#Install Node JS
 ENV NODE_VERSION=18.20.5
 RUN apt install -y curl
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
@@ -29,6 +32,15 @@ RUN gh repo clone 'Madhouse-Wallet/wallet-frontend' /app -- --branch ${BRANCH}
 
 # Step 6: Set the working directory to the cloned repository
 WORKDIR /app
+
+# Log the commit being used. If we filled in a specific commit param then use that. 
+RUN if \ 
+        [[ "$COMMIT" != '' ]]; \
+            then git branch "${BRANCH}-${COMMIT}" "${COMMIT}" \
+            && git switch "${BRANCH}-${COMMIT}"; \
+    fi
+
+RUN echo 'Target commit being built:' && gh browse  -c -n
 
 # Step 7: Install dependencies for the Next.js application
 RUN npm install @keep-network/tbtc-v2.ts --legacy-peer-deps

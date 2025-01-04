@@ -2,6 +2,14 @@ name: cdk_deploy_prod
 
 on:
   workflow_dispatch:
+    inputs:
+      commit: 
+        description: 'commit (the specific commit that we would like to build)'
+        required: false
+
+env:
+  COMMIT: ${{github.event.inputs.commit}}
+  DEV_BRANCH: main
 
 jobs:
   cdk_deploy:    

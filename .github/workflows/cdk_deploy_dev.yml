@@ -6,10 +6,14 @@ on:
           branch: 
             description: 'branch (from wallet-frontend repo code)'
             required: true
+          commit: 
+            description: 'commit (the specific commit that we would like to build)'
+            required: false
 
 env:
   DEV_BRANCH: ${{github.event.inputs.branch}}
-
+  COMMIT: ${{github.event.inputs.commit}}
+  
 jobs:
   cdk_deploy:    
     runs-on: ubuntu-latest
