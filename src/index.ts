@@ -11,13 +11,14 @@ class MadhouseFargate extends cdk.Stack {
   constructor(scope: cdk.App, id: string ,
     cert: string, _domainName: string,
     _protocol: cdk.aws_elasticloadbalancingv2.ApplicationProtocol,
-    props?: cdk.StackProps, _branch?: string, _name?: string,
+    props?: cdk.StackProps, _name?: string,
     ) {
     super(scope, id, props);
     
     const name = _name || '';
 
-    const branch = _branch || 'main';
+    const branch = process.env.DEV_BRANCH || 'main';
+    const commit = process.env.COMMIT || '';
 
     // Create VPC and Fargate Cluster
     // NOTE: Limit AZs to avoid reaching resource quotas
@@ -57,7 +58,8 @@ class MadhouseFargate extends cdk.Stack {
     image: ecs.ContainerImage.fromDockerImageAsset(
       new DockerImageAsset(this, `madhouse-image${name}`, {
       buildArgs:{
-        BRANCH: branch
+        BRANCH: branch,
+        COMMIT: commit
       },
       directory: './docker',
       assetName: 'madhouse-image',
@@ -146,7 +148,7 @@ new MadhouseFargate(app, 'madhouse',
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION
       }
-      },'main');
+      });
 
 new MadhouseFargate(app, 'uat',
   'arn:aws:acm:us-east-1:145023121234:certificate/5ca28edf-5484-4485-8b0a-ee84f1e61a80',
@@ -157,20 +159,18 @@ new MadhouseFargate(app, 'uat',
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION
       }},
-      
-      'staging','staging');
+      'staging');
 
 new MadhouseFargate(app, 'dev',
-  '',
-  '',
-  cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTP,
+  'arn:aws:acm:us-east-1:145023121234:certificate/657e4e34-1c24-4bb7-98fa-cb26513ef475',
+  'devstack.madhousewallet.com',
+  cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS,
   {
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION
       }},
-      
-      process.env.DEV_BRANCH,'dev');
+      'dev');
 
 
 app.synth();

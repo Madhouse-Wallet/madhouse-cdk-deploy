@@ -2,6 +2,14 @@ name: cdk_deploy_staging
 
 on:
   workflow_dispatch:
+    inputs:
+      commit: 
+        description: 'commit (the specific commit that we would like to build)'
+        required: false
+
+env:
+  COMMIT: ${{github.event.inputs.commit}}
+  DEV_BRANCH: staging
 
 jobs:
   cdk_deploy:    
