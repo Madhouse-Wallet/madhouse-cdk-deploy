@@ -90,10 +90,10 @@ if(_protocol === cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS){
       const serviceProps = {
         cluster,
         
-        memoryLimitMiB: 8192,
+        memoryLimitMiB: 2048,
         desiredCount: 1,
-        cpu: 2048,
-        ephemeralStorageGiB: 30,
+        cpu: 1024,
+        ephemeralStorageGiB: 21,
           
         assignPublicIp: true,
         listenerPort: 443,
