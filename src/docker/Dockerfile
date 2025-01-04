@@ -35,10 +35,11 @@ WORKDIR /app
 
 # Log the commit being used. If we filled in a specific commit param then use that. 
 RUN if [ "$COMMIT" != '' ]; then \
+        echo 'Switching to target branch...' && \
         git branch "${BRANCH}-${COMMIT}" "${COMMIT}" && \
         git switch "${BRANCH}-${COMMIT}"; \
     else \
-        echo 'Building latest commit:' && \
+        echo 'Building latest commit...' && \
         gh browse -c -n; \
     fi
 
