@@ -8,14 +8,13 @@ import cdk = require('aws-cdk-lib');
 
 
 class MadhouseFargate extends cdk.Stack {
-  constructor(scope: cdk.App, id: string ,
+  constructor(
+    scope: cdk.App, id: string ,
     cert: string, _domainName: string,
     _protocol: cdk.aws_elasticloadbalancingv2.ApplicationProtocol,
-    props?: cdk.StackProps, _name?: string,
+    props?: cdk.StackProps
     ) {
     super(scope, id, props);
-    
-    const name = _name || '';
 
     const branch = process.env.DEV_BRANCH || 'main';
     const commit = process.env.COMMIT || '';
@@ -56,7 +55,7 @@ class MadhouseFargate extends cdk.Stack {
 
  const _taskImageOptions = {
     image: ecs.ContainerImage.fromDockerImageAsset(
-      new DockerImageAsset(this, `madhouse-image${name}`, {
+      new DockerImageAsset(this, `madhouse-image${id}`, {
       buildArgs:{
         BRANCH: branch,
         COMMIT: commit
@@ -111,7 +110,7 @@ if(_protocol === cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS){
         taskSubnets: _taskSubnets,
         taskImageOptions: _taskImageOptions,
       }
-    new ecs_patterns.ApplicationLoadBalancedFargateService(this, `fargate-service${name}`,serviceProps );
+    new ecs_patterns.ApplicationLoadBalancedFargateService(this, `fargate-service${id}`,serviceProps );
 
     }else if(_protocol === cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTP){
        const serviceProps = {
@@ -130,7 +129,7 @@ if(_protocol === cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS){
           taskSubnets: _taskSubnets,
           taskImageOptions: _taskImageOptions,
         }
-        new ecs_patterns.ApplicationLoadBalancedFargateService(this, `fargate-service${name}`,serviceProps );
+        new ecs_patterns.ApplicationLoadBalancedFargateService(this, `fargate-service${id}`,serviceProps );
       }
     // Instantiate Fargate Service with just cluster and image
     
@@ -142,8 +141,8 @@ const app = new cdk.App();
 new MadhouseFargate(app, 'madhouse',
   'arn:aws:acm:us-east-1:145023121234:certificate/c934442e-84ed-4682-8a9d-eed1886a3ea4',
   'app.madhousewallet.com',
-  cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS
-  ,{
+  cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS,
+  {
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION
@@ -158,8 +157,7 @@ new MadhouseFargate(app, 'uat',
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION
-      }},
-      'staging');
+      }});
 
 new MadhouseFargate(app, 'dev',
   'arn:aws:acm:us-east-1:145023121234:certificate/657e4e34-1c24-4bb7-98fa-cb26513ef475',
@@ -169,8 +167,7 @@ new MadhouseFargate(app, 'dev',
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION
-      }},
-      'dev');
+      }});
 
 
 app.synth();
