@@ -8,9 +8,10 @@ import cdk = require('aws-cdk-lib');
 
 
 class MadhouseFargate extends cdk.Stack {
-  constructor(
-    scope: cdk.App, id: string ,
-    cert: string, _domainName: string,
+  constructor(scope: cdk.App, 
+    id: string ,
+    cert: string, 
+    _domainName: string,
     _protocol: cdk.aws_elasticloadbalancingv2.ApplicationProtocol,
     props?: cdk.StackProps
     ) {
@@ -138,7 +139,8 @@ if(_protocol === cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS){
 
 const app = new cdk.App();
 
-new MadhouseFargate(app, 'madhouse',
+new MadhouseFargate(app,
+  'madhouse',
   'arn:aws:acm:us-east-1:145023121234:certificate/c934442e-84ed-4682-8a9d-eed1886a3ea4',
   'app.madhousewallet.com',
   cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS,
@@ -149,7 +151,8 @@ new MadhouseFargate(app, 'madhouse',
       }
       });
 
-new MadhouseFargate(app, 'uat',
+new MadhouseFargate(app,
+  'uat',
   'arn:aws:acm:us-east-1:145023121234:certificate/5ca28edf-5484-4485-8b0a-ee84f1e61a80',
   'staging.madhousewallet.com',
   cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS,
@@ -159,7 +162,8 @@ new MadhouseFargate(app, 'uat',
     region: process.env.CDK_DEFAULT_REGION
       }});
 
-new MadhouseFargate(app, 'dev',
+new MadhouseFargate(app, 
+  'dev',
   'arn:aws:acm:us-east-1:145023121234:certificate/657e4e34-1c24-4bb7-98fa-cb26513ef475',
   'devstack.madhousewallet.com',
   cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS,
