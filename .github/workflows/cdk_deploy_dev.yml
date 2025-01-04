@@ -16,12 +16,16 @@ env:
   STACK: dev
   
 jobs:
+  print_env_vars:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Print env variables
+      run: echo env variables DEV_BRANCH ${{ env.DEV_BRANCH }} STACK ${{ env.STACK }} COMMIT ${{ env.COMMIT }}
+      
   cdk_deploy:    
     runs-on: ubuntu-latest
     environment: cdk-dev-deploy
     steps: 
-      - name: Print env variables
-        run: echo env variables DEV_BRANCH ${{ env.DEV_BRANCH }} STACK ${{ env.STACK }} COMMIT ${{ env.COMMIT }}
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:

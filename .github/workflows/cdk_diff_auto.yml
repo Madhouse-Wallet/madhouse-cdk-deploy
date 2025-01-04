@@ -10,13 +10,16 @@ env:
   STACK: ${{vars.STACK}}
 
 jobs:
-  docker_build:
+  print_env_vars:
     runs-on: ubuntu-latest
-    environment: cdk-diff-auto
     steps:
     - name: Print env variables
       run: echo env variables DEV_BRANCH ${{ env.DEV_BRANCH }} STACK ${{ env.STACK }}
 
+  docker_build:
+    runs-on: ubuntu-latest
+    environment: cdk-diff-auto
+    steps:
     - uses: actions/checkout@v4
     - name: Build the Docker image
       working-directory:  src/docker/
