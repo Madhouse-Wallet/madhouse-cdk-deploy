@@ -161,9 +161,9 @@ new MadhouseFargate(app, 'uat',
       'staging','staging');
 
 new MadhouseFargate(app, 'dev',
-  '',
-  '',
-  cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTP,
+  'arn:aws:acm:us-east-1:145023121234:certificate/657e4e34-1c24-4bb7-98fa-cb26513ef475',
+  'devstack.madhousewallet.com',
+  cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS,
   {
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
