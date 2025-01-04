@@ -34,13 +34,14 @@ RUN gh repo clone 'Madhouse-Wallet/wallet-frontend' /app -- --branch ${BRANCH}
 WORKDIR /app
 
 # Log the commit being used. If we filled in a specific commit param then use that. 
-RUN if ["$COMMIT" != '' ]; then \
-        git branch "${BRANCH}-${COMMIT}" "${COMMIT}"; \
-        git switch "${BRANCH}-${COMMIT}"; \
-        echo 'Target commit being built:'; \
-        && gh browse ${COMMIT} -c -n; \
+RUN if [ "$COMMIT" != '' ]; then \
+        git branch "${BRANCH}-${COMMIT}" "${COMMIT}" && \
+        git switch "${BRANCH}-${COMMIT}" && \
+        echo 'Target commit being built:' && \
+        gh browse ${COMMIT} -c -n; \
     else \
-        echo 'Building latest commit:' && gh browse -c -n; \
+        echo 'Building latest commit:' && \
+        gh browse -c -n; \
     fi
 
 # Step 7: Install dependencies for the Next.js application
