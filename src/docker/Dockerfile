@@ -37,10 +37,11 @@ WORKDIR /app
 RUN if \ 
         [[ "$COMMIT" != '' ]]; \
             then git branch "${BRANCH}-${COMMIT}" "${COMMIT}" \
-            && git switch "${BRANCH}-${COMMIT}"; \
+            && git switch "${BRANCH}-${COMMIT}" \
+            echo 'Target commit being built:' && gh browse ${COMMIT} -c -n; \
+        else \
+            echo 'Building latest commit:' && gh browse -c -n; \
     fi
-
-RUN echo 'Target commit being built:' && gh browse  -c -n
 
 # Step 7: Install dependencies for the Next.js application
 RUN npm install @keep-network/tbtc-v2.ts --legacy-peer-deps
