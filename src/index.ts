@@ -11,7 +11,7 @@ import ga_endpoints = require('aws-cdk-lib/aws-globalaccelerator-endpoints');
 class MadhouseFargate extends cdk.Stack {
   constructor(scope: cdk.App, 
     id: string ,
-    cert: string, 
+    //cert: string, 
     _domainName: string,
     _protocol: cdk.aws_elasticloadbalancingv2.ApplicationProtocol,
     props?: cdk.StackProps
@@ -20,7 +20,7 @@ class MadhouseFargate extends cdk.Stack {
 
     const branch = process.env.DEV_BRANCH || 'main';
     const commit = process.env.COMMIT || '';
-
+    
     // Create VPC and Fargate Cluster
     const vpc = ec2.Vpc.fromVpcAttributes(this, 'madhouse-vpc', {
       vpcId: 'vpc-0b4426b6b2c81b117',
@@ -98,8 +98,7 @@ const _domainZone = cdk.aws_route53.HostedZone.fromLookup(this,
 if(_protocol === cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS){
       const serviceProps = {
         cluster: cluster,
-        vpc: vpc,
-
+        
         memoryLimitMiB: 2048,
         desiredCount: 1,
         cpu: 1024,
@@ -164,7 +163,7 @@ const app = new cdk.App();
 
 new MadhouseFargate(app,
   'madhouse',
-  'arn:aws:acm:us-east-1:145023121234:certificate/c934442e-84ed-4682-8a9d-eed1886a3ea4',
+ // 'arn:aws:acm:us-east-1:145023121234:certificate/c934442e-84ed-4682-8a9d-eed1886a3ea4',
   'app.madhousewallet.com',
   cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS,
   {
@@ -176,7 +175,7 @@ new MadhouseFargate(app,
 
 new MadhouseFargate(app,
   'uat',
-  'arn:aws:acm:us-east-1:145023121234:certificate/5ca28edf-5484-4485-8b0a-ee84f1e61a80',
+ // 'arn:aws:acm:us-east-1:145023121234:certificate/5ca28edf-5484-4485-8b0a-ee84f1e61a80',
   'staging.madhousewallet.com',
   cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS,
   {
@@ -187,7 +186,7 @@ new MadhouseFargate(app,
 
 new MadhouseFargate(app, 
   'dev',
-  'arn:aws:acm:us-east-1:145023121234:certificate/657e4e34-1c24-4bb7-98fa-cb26513ef475',
+ // 'arn:aws:acm:us-east-1:145023121234:certificate/657e4e34-1c24-4bb7-98fa-cb26513ef475',
   'devstack.madhousewallet.com',
   cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS,
   {
