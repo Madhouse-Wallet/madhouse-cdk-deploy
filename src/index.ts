@@ -22,11 +22,11 @@ class MadhouseFargate extends cdk.Stack {
     const commit = process.env.COMMIT || '';
 
     // Create VPC and Fargate Cluster
-    // NOTE: Limit AZs to avoid reaching resource quotas
     const vpc = ec2.Vpc.fromVpcAttributes(this, 'madhouse-vpc', {
       vpcId: 'vpc-0b4426b6b2c81b117',
       availabilityZones: ['us-east-1a', 'us-east-1b'],
       vpcCidrBlock: '172.31.0.0/16',
+
       // Either pass literals for all IDs
       publicSubnetIds: ['subnet-0d6ef10031ae3e8c0', 'subnet-0d492e0e7f00f983e'],
       privateSubnetIds:['subnet-04c5eb95569d6fc19','subnet-0fb3947b66d250027']
@@ -42,24 +42,6 @@ class MadhouseFargate extends cdk.Stack {
       mutable: true
     }),
   ]
-
-    // vpc.addInterfaceEndpoint(`ecr-endpoint${id}`, {
-    //     service: ec2.InterfaceVpcEndpointAwsService.ECR,
-    //     securityGroups: _securityGroups,
-    //     subnets: _taskSubnets
-    //   });
-
-    // vpc.addInterfaceEndpoint(`secrets-endpoint${id}`, {
-    //   service: ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
-    //   securityGroups: _securityGroups,
-    //   subnets: _taskSubnets
-    // });
-
-    // vpc.addInterfaceEndpoint(`docker-endpoint${id}`, {
-    //   service: ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER,
-    //   securityGroups: _securityGroups,
-    //   subnets: _taskSubnets,
-    // });
 
     const cluster = ecs.Cluster.fromClusterAttributes(this, 'cluster',  {
       clusterArn: 'arn:aws:ecs:us-east-1:145023121234:cluster/madhouse-cluster',
@@ -100,55 +82,53 @@ class MadhouseFargate extends cdk.Stack {
     executionRole:  ecsRole, 
   }
 
-
-
-
 // Create an Accelerator
-const _accelerator = new globalaccelerator.Accelerator(this, `Accelerator${id}`);
-
-
+const _accelerator = new globalaccelerator.Accelerator(this, `Accelerator${id}`,{
+  enabled: true
+});
 
 const _domainZone = cdk.aws_route53.HostedZone.fromLookup(this,
   'madhouse-hostedzone',{domainName: 'madhousewallet.com',
   }
 )
 
-const _cert = cdk.aws_certificatemanager.Certificate.fromCertificateArn(this,
-  `madhouse-cert${id}`,cert )
+// const _cert = cdk.aws_certificatemanager.Certificate.fromCertificateArn(this,
+//   `madhouse-cert${id}`,cert )
 
 if(_protocol === cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS){
       const serviceProps = {
-        cluster,
-        
+        cluster: cluster,
+        vpc: vpc,
+
         memoryLimitMiB: 2048,
         desiredCount: 1,
         cpu: 1024,
         ephemeralStorageGiB: 21,
           
-        certificate:_cert,
-        domainName: _domainName,
-        domainZone: _domainZone,
-        recordType: cdk.aws_ecs_patterns.ApplicationLoadBalancedServiceRecordType.NONE,
-        protocol: _protocol,
+        // certificate:_cert,
+        // domainName: _domainName,
+        // domainZone: _domainZone,
+        // recordType: cdk.aws_ecs_patterns.ApplicationLoadBalancedServiceRecordType.NONE,
+        // protocol: _protocol,
 
         assignPublicIp: true,
         securityGroups:_securityGroups,
         taskSubnets: _taskSubnets,
         taskImageOptions: _taskImageOptions,
       }
-      const service = new ecs_patterns.ApplicationLoadBalancedFargateService(this, `fargate-service${id}`,serviceProps );
-
+      const service = new ecs_patterns.NetworkLoadBalancedFargateService(this, `fargate-service${id}`,serviceProps );
+      service.service.connections.allowFrom(ec2.Peer.anyIpv4(), ec2.Port.tcp(80));
       // Create a Listener
+      
       const _listener = _accelerator.addListener(`Listener${id}`, {
         portRanges: [
-          {
-            fromPort: 443
-          },
-        ],
-      });
+              {
+                fromPort: 80
+              },
+        ],});
 
       _listener.addEndpointGroup(`Group${id}`, {
-      endpoints: [new ga_endpoints.ApplicationLoadBalancerEndpoint(service.loadBalancer)],
+      endpoints: [new ga_endpoints.NetworkLoadBalancerEndpoint(service.loadBalancer)],
       });
 
       new cdk.aws_route53.ARecord(this, `GlobalAcceleratorDNS${id}`, {
