@@ -2,132 +2,112 @@ import ec2 = require('aws-cdk-lib/aws-ec2');
 import ecs = require('aws-cdk-lib/aws-ecs');
 import iam = require('aws-cdk-lib/aws-iam');
 import ecr = require('aws-cdk-lib/aws-ecr');
-import { DockerImageAsset } from 'aws-cdk-lib/aws-ecr-assets';
+//import { DockerImageAsset } from 'aws-cdk-lib/aws-ecr-assets';
 import ecs_patterns = require('aws-cdk-lib/aws-ecs-patterns');
 import cdk = require('aws-cdk-lib');
 import globalaccelerator = require('aws-cdk-lib/aws-globalaccelerator');
 import ga_endpoints = require('aws-cdk-lib/aws-globalaccelerator-endpoints');
+import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
 
 class MadhouseFargate extends cdk.Stack {
   constructor(scope: cdk.App, 
     id: string ,
-    //cert: string, 
+    cert: string, 
     _domainName: string,
-    _protocol: cdk.aws_elasticloadbalancingv2.ApplicationProtocol,
     props?: cdk.StackProps
     ) {
     super(scope, id, props);
-
-    const branch = process.env.DEV_BRANCH || 'main';
-    const commit = process.env.COMMIT || '';
     
     // Create VPC and Fargate Cluster
-    const vpc = ec2.Vpc.fromVpcAttributes(this, 'madhouse-vpc', {
-      vpcId: 'vpc-0b4426b6b2c81b117',
-      availabilityZones: ['us-east-1a', 'us-east-1b'],
-      vpcCidrBlock: '172.31.0.0/16',
+const vpc = new ec2.Vpc(this, 'Vpc', { natGateways: 1 });
 
-      // Either pass literals for all IDs
-      publicSubnetIds: ['subnet-0d6ef10031ae3e8c0', 'subnet-0d492e0e7f00f983e'],
-      privateSubnetIds:['subnet-04c5eb95569d6fc19','subnet-0fb3947b66d250027']
-    });
+const _taskSubnets = { subnets:vpc.publicSubnets }
 
-    const _taskSubnets = { subnets:vpc.publicSubnets }
+const repository =  ecr.Repository.fromRepositoryName(this, 'Repository', 
+        'cdk-hnb659fds-container-assets-145023121234-us-east-1',
+      );
 
-    const _securityGroups = [        
-      ec2.SecurityGroup.fromSecurityGroupId(this, 'madhouse-ecs-sg', 'sg-01cd17c4e6b52b54f', {
-      mutable: true
-    }),
-    ec2.SecurityGroup.fromSecurityGroupId(this, 'madhouse-alb-sg', 'sg-04eafa4a188f6a837', {
-      mutable: true
-    }),
-  ]
+const ecsRole= iam.Role.fromRoleArn(this, 'ecsRole',
+        'arn:aws:iam::145023121234:role/madhouse-ecs-role',{
+          mutable: true,
+        });
+      repository.grantPull(ecsRole);
 
-    const cluster = ecs.Cluster.fromClusterAttributes(this, 'cluster',  {
-      clusterArn: 'arn:aws:ecs:us-east-1:145023121234:cluster/madhouse-cluster',
-      clusterName: "madhouse-cluster", vpc: vpc,
-      securityGroups: [
-        ec2.SecurityGroup.fromSecurityGroupId(this, 'madhouse-ecs-sg-cluster', 'sg-01cd17c4e6b52b54f', {
-          mutable: true
-        }),
-      ]
+//const branch = process.env.DEV_BRANCH || 'main';
+//const commit = process.env.COMMIT || '';
+//  const _taskImageOptions = {
+//     image: ecs.ContainerImage.fromDockerImageAsset(
+//       new DockerImageAsset(this, `madhouse-image${id}`, {
+//       buildArgs:{
+//         BRANCH: branch,
+//         COMMIT: commit
+//       },
+//       directory: './docker',
+//       assetName: 'madhouse-image',
+//       file: 'Dockerfile',
+//       cacheDisabled: true,
+//       extraHash: String(Math.floor(Math.random() * (10000 - 1)) + 1)
+//     })),
+//     taskRole:  ecsRole,
+//     executionRole:  ecsRole, 
+//   }
 
-  });
+  const __taskImageOptions = {
+        image: ecs.ContainerImage.fromRegistry('145023121234.dkr.ecr.us-east-1.amazonaws.com/cdk-hnb659fds-container-assets-145023121234-us-east-1:5ed1439fa4254f97b59d3ce87c695dc2477f7cc026ffc808aa951a90fe7c3102'),
+        containerPort: 80,
+        taskRole:  ecsRole,
+        executionRole:  ecsRole, 
+      }
 
-  const repository =  ecr.Repository.fromRepositoryName(this, 'Repository', 
-    'cdk-hnb659fds-container-assets-145023121234-us-east-1',
-  );
-
-  const ecsRole= iam.Role.fromRoleArn(this, 'ecsRole',
-    'arn:aws:iam::145023121234:role/madhouse-ecs-role',{
-      mutable: true,
-    });
-
-  repository.grantPull(ecsRole);
-
- const _taskImageOptions = {
-    image: ecs.ContainerImage.fromDockerImageAsset(
-      new DockerImageAsset(this, `madhouse-image${id}`, {
-      buildArgs:{
-        BRANCH: branch,
-        COMMIT: commit
-      },
-      directory: './docker',
-      assetName: 'madhouse-image',
-      file: 'Dockerfile',
-      cacheDisabled: true,
-      extraHash: String(Math.floor(Math.random() * (10000 - 1)) + 1)
-    })),
-    taskRole:  ecsRole,
-    executionRole:  ecsRole, 
-  }
-
-// Create an Accelerator
+  // Create an Accelerator
 const _accelerator = new globalaccelerator.Accelerator(this, `Accelerator${id}`,{
-  enabled: true
-});
+      enabled: true
+    });
 
 const _domainZone = cdk.aws_route53.HostedZone.fromLookup(this,
-  'madhouse-hostedzone',{domainName: 'madhousewallet.com',
-  }
-)
+      'madhouse-hostedzone',{domainName: 'madhousewallet.com',
+      }
+    )
 
-// const _cert = cdk.aws_certificatemanager.Certificate.fromCertificateArn(this,
-//   `madhouse-cert${id}`,cert )
+const _cert = Certificate.fromCertificateArn(this,
+     `madhouse-cert${id}`,cert )
 
-if(_protocol === cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS){
-      const serviceProps = {
-        cluster: cluster,
-        
+const serviceProps = {
+        vpc: vpc,
+
         memoryLimitMiB: 2048,
         desiredCount: 1,
         cpu: 1024,
         ephemeralStorageGiB: 21,
           
-        // certificate:_cert,
-        // domainName: _domainName,
-        // domainZone: _domainZone,
-        // recordType: cdk.aws_ecs_patterns.ApplicationLoadBalancedServiceRecordType.NONE,
-        // protocol: _protocol,
+        certificate:_cert,
+        domainName: _domainName,
+        domainZone: _domainZone,
+        recordType: cdk.aws_ecs_patterns.ApplicationLoadBalancedServiceRecordType.NONE,
+        protocol: cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS,
+        redirectHTTP: true,
 
         assignPublicIp: true,
-        securityGroups:_securityGroups,
         taskSubnets: _taskSubnets,
-        taskImageOptions: _taskImageOptions,
+        taskImageOptions: __taskImageOptions,
       }
-      const service = new ecs_patterns.NetworkLoadBalancedFargateService(this, `fargate-service${id}`,serviceProps );
+      const service = new ecs_patterns.ApplicationLoadBalancedFargateService(this, `fargate-service${id}`,serviceProps );
       service.service.connections.allowFrom(ec2.Peer.anyIpv4(), ec2.Port.tcp(80));
+      service.service.connections.allowFrom(ec2.Peer.anyIpv4(), ec2.Port.tcp(443));
       // Create a Listener
       
       const _listener = _accelerator.addListener(`Listener${id}`, {
         portRanges: [
               {
-                fromPort: 80
+                fromPort: 443,
+              },
+              {
+                fromPort: 80,
               },
         ],});
 
       _listener.addEndpointGroup(`Group${id}`, {
-      endpoints: [new ga_endpoints.NetworkLoadBalancerEndpoint(service.loadBalancer)],
+      endpoints: [new ga_endpoints.ApplicationLoadBalancerEndpoint(service.loadBalancer)],
       });
 
       new cdk.aws_route53.ARecord(this, `GlobalAcceleratorDNS${id}`, {
@@ -135,37 +115,15 @@ if(_protocol === cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS){
         recordName: _domainName, 
         target: cdk.aws_route53.RecordTarget.fromAlias(new cdk.aws_route53_targets.GlobalAcceleratorTarget(_accelerator)),
       });
-
-
-    }else if(_protocol === cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTP){
-       const serviceProps = {
-          cluster,
-          
-          memoryLimitMiB: 2048,
-          desiredCount: 1,
-          cpu: 1024,
-          ephemeralStorageGiB: 21,
-            
-          assignPublicIp: true,
-          listenerPort: 80,
-          redirectHTTP: false,
-          protocol: _protocol,
-          securityGroups:_securityGroups,
-          taskSubnets: _taskSubnets,
-          taskImageOptions: _taskImageOptions,
-        }
-        new ecs_patterns.ApplicationLoadBalancedFargateService(this, `fargate-service${id}`,serviceProps );
-      }
     }
   }
 
 const app = new cdk.App();
 
 new MadhouseFargate(app,
-  'madhouse',
- // 'arn:aws:acm:us-east-1:145023121234:certificate/c934442e-84ed-4682-8a9d-eed1886a3ea4',
+  'prod',
+  'arn:aws:acm:us-east-1:145023121234:certificate/c934442e-84ed-4682-8a9d-eed1886a3ea4',
   'app.madhousewallet.com',
-  cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS,
   {
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
@@ -175,9 +133,8 @@ new MadhouseFargate(app,
 
 new MadhouseFargate(app,
   'uat',
- // 'arn:aws:acm:us-east-1:145023121234:certificate/5ca28edf-5484-4485-8b0a-ee84f1e61a80',
+  'arn:aws:acm:us-east-1:145023121234:certificate/5ca28edf-5484-4485-8b0a-ee84f1e61a80',
   'staging.madhousewallet.com',
-  cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS,
   {
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
@@ -186,14 +143,89 @@ new MadhouseFargate(app,
 
 new MadhouseFargate(app, 
   'dev',
- // 'arn:aws:acm:us-east-1:145023121234:certificate/657e4e34-1c24-4bb7-98fa-cb26513ef475',
+  'arn:aws:acm:us-east-1:145023121234:certificate/4a8d1a05-9508-4554-b47d-70e173dbdacd',
   'devstack.madhousewallet.com',
-  cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS,
   {
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION
       }});
+
+
+
+new MadhouseFargate(app, 
+  'dev2alb',
+  'arn:aws:acm:us-east-1:145023121234:certificate/4a8d1a05-9508-4554-b47d-70e173dbdacd',
+  'gatest.madhousewallet.com',
+  {
+  env: {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: process.env.CDK_DEFAULT_REGION
+      }});
+
+// const stack = new cdk.Stack(app, 'test-stack',
+//   {
+//   env: {
+//     account: process.env.CDK_DEFAULT_ACCOUNT,
+//     region: process.env.CDK_DEFAULT_REGION
+//       }});
+
+// const vpc = new ec2.Vpc(stack, 'Vpc', { natGateways: 1 });
+
+//       const ecsRole= iam.Role.fromRoleArn(stack, 'ecsRole',
+//         'arn:aws:iam::145023121234:role/madhouse-ecs-role',{
+//           mutable: true,
+//         });
+
+//         const repository =  ecr.Repository.fromRepositoryName(stack, 'Repository', 
+//           'cdk-hnb659fds-container-assets-145023121234-us-east-1',
+//         );
+
+//       repository.grantPull(ecsRole);
+
+//       const service = new ecs_patterns.NetworkLoadBalancedFargateService(stack, 'NLBService', {
+//         vpc,
+
+//         memoryLimitMiB: 2048,
+//         desiredCount: 1,
+//         cpu: 1024,
+//         ephemeralStorageGiB: 21,
+
+//         listenerPort: 443,
+//         listenerCertificate: Certificate.fromCertificateArn(stack, 'Cert', 'arn:aws:acm:us-east-1:145023121234:certificate/657e4e34-1c24-4bb7-98fa-cb26513ef475'),
+
+//         taskSubnets: { subnetType: ec2.SubnetType.PUBLIC },
+//         assignPublicIp: true,
+//         taskImageOptions: {
+//           image: ecs.ContainerImage.fromRegistry('145023121234.dkr.ecr.us-east-1.amazonaws.com/cdk-hnb659fds-container-assets-145023121234-us-east-1:5ed1439fa4254f97b59d3ce87c695dc2477f7cc026ffc808aa951a90fe7c3102'),
+//           containerPort: 80,
+//           taskRole:  ecsRole,
+//           executionRole:  ecsRole, 
+//         },
+//       });
+//       service.service.connections.allowFrom(ec2.Peer.anyIpv4(), ec2.Port.tcp(80));
+
+//       // WHEN
+//       const accelerator = new globalaccelerator.Accelerator(stack, 'Accelerator', {
+//         enabled: true,
+//       });
+//       const listener = accelerator.addListener('agaListener', { portRanges: [{ fromPort: 443 }] }); listener.addEndpointGroup(
+//         'EndpointGroup', { 
+//           endpoints: [new ga_endpoints.NetworkLoadBalancerEndpoint(service.loadBalancer)],
+//           portOverrides: [{
+//             endpointPort: 80,
+//             listenerPort: 443,
+//           }],
+//         });
+
+//       new cdk.aws_route53.ARecord(stack, 'GlobalAcceleratorDNS-test-stack', {
+//         zone: cdk.aws_route53.HostedZone.fromLookup(stack,
+//           'madhouse-hostedzone',{domainName: 'madhousewallet.com',
+//           }
+//         ),
+//         recordName: 'devstack.madhousewallet.com', 
+//         target: cdk.aws_route53.RecordTarget.fromAlias(new cdk.aws_route53_targets.GlobalAcceleratorTarget(accelerator)),
+//       });
 
 app.synth();
 
