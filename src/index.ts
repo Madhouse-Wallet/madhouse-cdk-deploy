@@ -8,7 +8,6 @@ import cdk = require('aws-cdk-lib');
 import globalaccelerator = require('aws-cdk-lib/aws-globalaccelerator');
 import ga_endpoints = require('aws-cdk-lib/aws-globalaccelerator-endpoints');
 
-
 class MadhouseFargate extends cdk.Stack {
   constructor(scope: cdk.App, 
     id: string ,
@@ -90,16 +89,24 @@ class MadhouseFargate extends cdk.Stack {
 ]
 
 // Create an Accelerator
-const accelerator = new globalaccelerator.Accelerator(this, 'Accelerator');
+const _accelerator = new globalaccelerator.Accelerator(this, `Accelerator${id}`);
 
 // Create a Listener
-const listener = accelerator.addListener('Listener', {
+const _listener = _accelerator.addListener(`Listener${id}`, {
   portRanges: [
-    { fromPort: 80 },
-    { fromPort: 443 },
+    {
+       fromPort: 443
+     },
   ],
 });
 
+const _domainZone = cdk.aws_route53.HostedZone.fromLookup(this,
+  'madhouse-hostedzone',{domainName: 'madhousewallet.com',
+  }
+)
+
+const _cert = cdk.aws_certificatemanager.Certificate.fromCertificateArn(this,
+  `madhouse-cert${id}`,cert )
 
 if(_protocol === cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS){
       const serviceProps = {
@@ -113,23 +120,26 @@ if(_protocol === cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS){
         assignPublicIp: true,
         listenerPort: 443,
         redirectHTTP: true,
-        certificate:cdk.aws_certificatemanager.Certificate.fromCertificateArn(this,
-          'madhouse-cert',cert ),
+        certificate:_cert,
         domainName: _domainName,
-        domainZone: cdk.aws_route53.HostedZone.fromLookup(this,
-          'madhouse-hostedzone',{domainName: 'madhousewallet.com',
-            
-          }
-        ),
+        domainZone: _domainZone,
+        recordType: cdk.aws_ecs_patterns.ApplicationLoadBalancedServiceRecordType.NONE,
         protocol: _protocol,
+
         securityGroups:_securityGroups,
         taskSubnets: _taskSubnets,
         taskImageOptions: _taskImageOptions,
       }
       const service = new ecs_patterns.ApplicationLoadBalancedFargateService(this, `fargate-service${id}`,serviceProps );
 
-      listener.addEndpointGroup(`Group${id}`, {
+      _listener.addEndpointGroup(`Group${id}`, {
       endpoints: [new ga_endpoints.ApplicationLoadBalancerEndpoint(service.loadBalancer)],
+      });
+
+      new cdk.aws_route53.ARecord(this, `GlobalAcceleratorDNS${id}`, {
+        zone: _domainZone,
+        recordName: _domainName, 
+        target: cdk.aws_route53.RecordTarget.fromAlias(new cdk.aws_route53_targets.GlobalAcceleratorTarget(_accelerator)),
       });
 
     }else if(_protocol === cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTP){
@@ -151,10 +161,8 @@ if(_protocol === cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS){
         }
         new ecs_patterns.ApplicationLoadBalancedFargateService(this, `fargate-service${id}`,serviceProps );
       }
-    // Instantiate Fargate Service with just cluster and image
-    
+    }
   }
-}
 
 const app = new cdk.App();
 
@@ -191,7 +199,6 @@ new MadhouseFargate(app,
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION
       }});
-
 
 app.synth();
 
