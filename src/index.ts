@@ -30,9 +30,20 @@ class MadhouseFargate extends cdk.Stack {
       // Either pass literals for all IDs
       publicSubnetIds: ['subnet-0d6ef10031ae3e8c0', 'subnet-0d492e0e7f00f983e'],
       privateSubnetIds:['subnet-04c5eb95569d6fc19','subnet-0fb3947b66d250027']
-    
     });
-    
+
+    vpc.addInterfaceEndpoint(`ecr-endpoint${id}`, {
+        service: ec2.InterfaceVpcEndpointAwsService.ECR
+      });
+
+    vpc.addInterfaceEndpoint(`secrets-endpoint${id}`, {
+      service: ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER
+    });
+
+    vpc.addInterfaceEndpoint(`docker-endpoint${id}`, {
+      service: ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER
+    });
+
     const cluster = ecs.Cluster.fromClusterAttributes(this, 'cluster',  {
       clusterArn: 'arn:aws:ecs:us-east-1:145023121234:cluster/madhouse-cluster',
       clusterName: "madhouse-cluster", vpc: vpc,
