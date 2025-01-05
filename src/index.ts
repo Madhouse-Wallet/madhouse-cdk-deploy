@@ -26,7 +26,7 @@ class MadhouseFargate extends cdk.Stack {
     const vpc = ec2.Vpc.fromVpcAttributes(this, 'madhouse-vpc', {
       vpcId: 'vpc-0b4426b6b2c81b117',
       availabilityZones: ['us-east-1a', 'us-east-1b'],
-    
+      vpcCidrBlock: '172.31.0.0/16',
       // Either pass literals for all IDs
       publicSubnetIds: ['subnet-0d6ef10031ae3e8c0', 'subnet-0d492e0e7f00f983e'],
       privateSubnetIds:['subnet-04c5eb95569d6fc19','subnet-0fb3947b66d250027']
