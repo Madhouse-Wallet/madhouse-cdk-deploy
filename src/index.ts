@@ -91,14 +91,7 @@ class MadhouseFargate extends cdk.Stack {
 // Create an Accelerator
 const _accelerator = new globalaccelerator.Accelerator(this, `Accelerator${id}`);
 
-// Create a Listener
-const _listener = _accelerator.addListener(`Listener${id}`, {
-  portRanges: [
-    {
-       fromPort: 443
-     },
-  ],
-});
+
 
 const _domainZone = cdk.aws_route53.HostedZone.fromLookup(this,
   'madhouse-hostedzone',{domainName: 'madhousewallet.com',
@@ -117,9 +110,6 @@ if(_protocol === cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS){
         cpu: 1024,
         ephemeralStorageGiB: 21,
           
-        assignPublicIp: true,
-        listenerPort: 443,
-        redirectHTTP: true,
         certificate:_cert,
         domainName: _domainName,
         domainZone: _domainZone,
@@ -132,6 +122,15 @@ if(_protocol === cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS){
       }
       const service = new ecs_patterns.ApplicationLoadBalancedFargateService(this, `fargate-service${id}`,serviceProps );
 
+      // Create a Listener
+      const _listener = _accelerator.addListener(`Listener${id}`, {
+        portRanges: [
+          {
+            fromPort: 443
+          },
+        ],
+      });
+
       _listener.addEndpointGroup(`Group${id}`, {
       endpoints: [new ga_endpoints.ApplicationLoadBalancerEndpoint(service.loadBalancer)],
       });
@@ -141,6 +140,7 @@ if(_protocol === cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS){
         recordName: _domainName, 
         target: cdk.aws_route53.RecordTarget.fromAlias(new cdk.aws_route53_targets.GlobalAcceleratorTarget(_accelerator)),
       });
+
 
     }else if(_protocol === cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTP){
        const serviceProps = {
