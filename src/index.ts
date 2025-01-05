@@ -5,6 +5,8 @@ import ecr = require('aws-cdk-lib/aws-ecr');
 import { DockerImageAsset } from 'aws-cdk-lib/aws-ecr-assets';
 import ecs_patterns = require('aws-cdk-lib/aws-ecs-patterns');
 import cdk = require('aws-cdk-lib');
+import globalaccelerator = require('aws-cdk-lib/aws-globalaccelerator');
+import ga_endpoints = require('aws-cdk-lib/aws-globalaccelerator-endpoints');
 
 
 class MadhouseFargate extends cdk.Stack {
@@ -86,6 +88,19 @@ class MadhouseFargate extends cdk.Stack {
     mutable: true
   }),
 ]
+
+// Create an Accelerator
+const accelerator = new globalaccelerator.Accelerator(this, 'Accelerator');
+
+// Create a Listener
+const listener = accelerator.addListener('Listener', {
+  portRanges: [
+    { fromPort: 80 },
+    { fromPort: 443 },
+  ],
+});
+
+
 if(_protocol === cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS){
       const serviceProps = {
         cluster,
@@ -111,7 +126,11 @@ if(_protocol === cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS){
         taskSubnets: _taskSubnets,
         taskImageOptions: _taskImageOptions,
       }
-    new ecs_patterns.ApplicationLoadBalancedFargateService(this, `fargate-service${id}`,serviceProps );
+      const service = new ecs_patterns.ApplicationLoadBalancedFargateService(this, `fargate-service${id}`,serviceProps );
+
+      listener.addEndpointGroup(`Group${id}`, {
+      endpoints: [new ga_endpoints.ApplicationLoadBalancerEndpoint(service.loadBalancer)],
+      });
 
     }else if(_protocol === cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTP){
        const serviceProps = {
