@@ -32,16 +32,33 @@ class MadhouseFargate extends cdk.Stack {
       privateSubnetIds:['subnet-04c5eb95569d6fc19','subnet-0fb3947b66d250027']
     });
 
+    const _taskSubnets = { subnets:vpc.publicSubnets }
+
+    const _securityGroups = [        
+      ec2.SecurityGroup.fromSecurityGroupId(this, 'madhouse-ecs-sg', 'sg-01cd17c4e6b52b54f', {
+      mutable: true
+    }),
+    ec2.SecurityGroup.fromSecurityGroupId(this, 'madhouse-alb-sg', 'sg-04eafa4a188f6a837', {
+      mutable: true
+    }),
+  ]
+
     vpc.addInterfaceEndpoint(`ecr-endpoint${id}`, {
-        service: ec2.InterfaceVpcEndpointAwsService.ECR
+        service: ec2.InterfaceVpcEndpointAwsService.ECR,
+        securityGroups: _securityGroups,
+        subnets: _taskSubnets
       });
 
     vpc.addInterfaceEndpoint(`secrets-endpoint${id}`, {
-      service: ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER
+      service: ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
+      securityGroups: _securityGroups,
+      subnets: _taskSubnets
     });
 
     vpc.addInterfaceEndpoint(`docker-endpoint${id}`, {
-      service: ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER
+      service: ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER,
+      securityGroups: _securityGroups,
+      subnets: _taskSubnets,
     });
 
     const cluster = ecs.Cluster.fromClusterAttributes(this, 'cluster',  {
@@ -83,21 +100,8 @@ class MadhouseFargate extends cdk.Stack {
     executionRole:  ecsRole, 
   }
 
-  const _taskSubnets ={
-    subnets: [
-      ec2.Subnet.fromSubnetId(this, 'pub-subnet-1', 'subnet-0d6ef10031ae3e8c0'),
-      ec2.Subnet.fromSubnetId(this, 'pub-subnet-2', 'subnet-0d492e0e7f00f983e'),
-    ]
-  }
 
-  const _securityGroups = [        
-    ec2.SecurityGroup.fromSecurityGroupId(this, 'madhouse-ecs-sg', 'sg-01cd17c4e6b52b54f', {
-    mutable: true
-  }),
-  ec2.SecurityGroup.fromSecurityGroupId(this, 'madhouse-alb-sg', 'sg-04eafa4a188f6a837', {
-    mutable: true
-  }),
-]
+
 
 // Create an Accelerator
 const _accelerator = new globalaccelerator.Accelerator(this, `Accelerator${id}`);
