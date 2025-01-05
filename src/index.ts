@@ -43,23 +43,23 @@ class MadhouseFargate extends cdk.Stack {
     }),
   ]
 
-    vpc.addInterfaceEndpoint(`ecr-endpoint${id}`, {
-        service: ec2.InterfaceVpcEndpointAwsService.ECR,
-        securityGroups: _securityGroups,
-        subnets: _taskSubnets
-      });
+    // vpc.addInterfaceEndpoint(`ecr-endpoint${id}`, {
+    //     service: ec2.InterfaceVpcEndpointAwsService.ECR,
+    //     securityGroups: _securityGroups,
+    //     subnets: _taskSubnets
+    //   });
 
-    vpc.addInterfaceEndpoint(`secrets-endpoint${id}`, {
-      service: ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
-      securityGroups: _securityGroups,
-      subnets: _taskSubnets
-    });
+    // vpc.addInterfaceEndpoint(`secrets-endpoint${id}`, {
+    //   service: ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
+    //   securityGroups: _securityGroups,
+    //   subnets: _taskSubnets
+    // });
 
-    vpc.addInterfaceEndpoint(`docker-endpoint${id}`, {
-      service: ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER,
-      securityGroups: _securityGroups,
-      subnets: _taskSubnets,
-    });
+    // vpc.addInterfaceEndpoint(`docker-endpoint${id}`, {
+    //   service: ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER,
+    //   securityGroups: _securityGroups,
+    //   subnets: _taskSubnets,
+    // });
 
     const cluster = ecs.Cluster.fromClusterAttributes(this, 'cluster',  {
       clusterArn: 'arn:aws:ecs:us-east-1:145023121234:cluster/madhouse-cluster',
@@ -131,6 +131,7 @@ if(_protocol === cdk.aws_elasticloadbalancingv2.ApplicationProtocol.HTTPS){
         recordType: cdk.aws_ecs_patterns.ApplicationLoadBalancedServiceRecordType.NONE,
         protocol: _protocol,
 
+        assignPublicIp: true,
         securityGroups:_securityGroups,
         taskSubnets: _taskSubnets,
         taskImageOptions: _taskImageOptions,
