@@ -118,7 +118,6 @@ const serviceProps = {
         // CloudFront distribution
   const distribution = new cloudfront.Distribution(this, 'SiteDistribution', {
         certificate: _cert,
-        domainNames: [_domainName],
         errorResponses:[
           {
             httpStatus: 403,
