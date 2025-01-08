@@ -117,20 +117,10 @@ const serviceProps = {
 
         // CloudFront distribution
   const distribution = new cloudfront.Distribution(this, 'SiteDistribution', {
-        certificate: _cert,
-        errorResponses:[
-          {
-            httpStatus: 403,
-            responseHttpStatus: 403,
-            responsePagePath: '/error.html',
-            ttl: Duration.minutes(30),
-          }
-        ],
         defaultBehavior: {
           origin:  new cloudfront_origins.LoadBalancerV2Origin(service.loadBalancer),
           compress: true,
-          allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-          viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS
         }
         })
 
@@ -139,7 +129,7 @@ const serviceProps = {
           zone: _domainZone,
           recordName: _domainName, 
           target: cdk.aws_route53.RecordTarget.fromAlias(new cdk.aws_route53_targets.CloudFrontTarget(distribution)),
-          region: 'ap-south-1'
+          region: 'us-west-1'
         });
 
 
