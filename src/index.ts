@@ -10,7 +10,6 @@ import ga_endpoints = require('aws-cdk-lib/aws-globalaccelerator-endpoints');
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as cloudfront_origins from 'aws-cdk-lib/aws-cloudfront-origins';
-import { Duration } from 'aws-cdk-lib';
 
 class MadhouseFargate extends cdk.Stack {
   constructor(scope: cdk.App, 
