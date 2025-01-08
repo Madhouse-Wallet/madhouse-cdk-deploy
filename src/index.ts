@@ -118,9 +118,7 @@ const serviceProps = {
         // CloudFront distribution
   const distribution = new cloudfront.Distribution(this, 'SiteDistribution', {
         defaultBehavior: {
-          origin:  new cloudfront_origins.LoadBalancerV2Origin(service.loadBalancer),
-          compress: true,
-          allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS
+          origin:  new cloudfront_origins.LoadBalancerV2Origin(service.loadBalancer)
         }
         })
 
