@@ -37,12 +37,21 @@ const ecsRole= iam.Role.fromRoleArn(this, 'ecsRole',
 
 const branch = process.env.DEV_BRANCH || 'main';
 const commit = process.env.COMMIT || '';
+const _NEXT_PUBLIC_AWS_S3_ACCESS_KEY = process.env.NEXT_PUBLIC_AWS_S3_ACCESS_KEY || '';
+const _NEXT_PUBLIC_AWS_S3_REGION = process.env.NEXT_PUBLIC_AWS_S3_REGION || '';
+const _NEXT_PUBLIC_AWS_S3_SECRET_KEY = process.env.NEXT_PUBLIC_AWS_S3_SECRET_KEY || '';
+const _NEXT_PUBLIC_EMAIL = process.env.NEXT_PUBLIC_EMAIL || '';
+
  const _taskImageOptions = {
     image: ecs.ContainerImage.fromDockerImageAsset(
       new DockerImageAsset(this, `madhouse-image${id}`, {
       buildArgs:{
         BRANCH: branch,
-        COMMIT: commit
+        COMMIT: commit,
+        NEXT_PUBLIC_AWS_S3_ACCESS_KEY: _NEXT_PUBLIC_AWS_S3_ACCESS_KEY,
+        NEXT_PUBLIC_AWS_S3_REGION: _NEXT_PUBLIC_AWS_S3_REGION,
+        NEXT_PUBLIC_AWS_S3_SECRET_KEY: _NEXT_PUBLIC_AWS_S3_SECRET_KEY,
+        NEXT_PUBLIC_EMAIL: _NEXT_PUBLIC_EMAIL
       },
       directory: './docker',
       assetName: 'madhouse-image',
@@ -115,7 +124,7 @@ const serviceProps = {
       });
 
         // CloudFront distribution
-  const distribution = new cloudfront.Distribution(this, 'SiteDistribution', {
+  const distribution = new cloudfront.Distribution(this, `SiteDistribution${id}`, {
         defaultBehavior: {
           origin:  new cloudfront_origins.LoadBalancerV2Origin(service.loadBalancer)
         }

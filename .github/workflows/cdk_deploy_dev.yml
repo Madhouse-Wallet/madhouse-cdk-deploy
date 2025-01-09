@@ -14,6 +14,10 @@ env:
   DEV_BRANCH: ${{github.event.inputs.branch}}
   COMMIT: ${{github.event.inputs.commit}}
   STACK: dev
+  NEXT_PUBLIC_AWS_S3_ACCESS_KEY: ${{vars.NEXT_PUBLIC_AWS_S3_ACCESS_KEY}}
+  NEXT_PUBLIC_AWS_S3_REGION: ${{vars.NEXT_PUBLIC_AWS_S3_REGION}}
+  NEXT_PUBLIC_AWS_S3_SECRET_KEY: ${{vars.NEXT_PUBLIC_AWS_S3_SECRET_KEY}}
+  NEXT_PUBLIC_EMAIL: ${{vars.NEXT_PUBLIC_EMAIL}}
   
 jobs:
   print_env_vars:
