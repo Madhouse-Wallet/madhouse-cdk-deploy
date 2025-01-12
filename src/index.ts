@@ -114,7 +114,6 @@ const serviceProps = {
           zone: _domainZone,
           recordName: _domainName, 
           target: cdk.aws_route53.RecordTarget.fromAlias(new cdk.aws_route53_targets.CloudFrontTarget(distribution)),
-          region: 'us-east-1',
           ttl: cdk.Duration.seconds(3600)
         });
 
