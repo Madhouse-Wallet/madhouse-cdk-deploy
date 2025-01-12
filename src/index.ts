@@ -5,12 +5,9 @@ import ecr = require('aws-cdk-lib/aws-ecr');
 import { DockerImageAsset } from 'aws-cdk-lib/aws-ecr-assets';
 import ecs_patterns = require('aws-cdk-lib/aws-ecs-patterns');
 import cdk = require('aws-cdk-lib');
-import globalaccelerator = require('aws-cdk-lib/aws-globalaccelerator');
-import ga_endpoints = require('aws-cdk-lib/aws-globalaccelerator-endpoints');
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as cloudfront_origins from 'aws-cdk-lib/aws-cloudfront-origins';
-//import { custom_resources as cr } from "aws-cdk-lib";
 
 class MadhouseFargate extends cdk.Stack {
   constructor(scope: cdk.App, 
@@ -71,11 +68,6 @@ const _NEXT_PUBLIC_EMAIL = process.env.NEXT_PUBLIC_EMAIL || '';
   //       executionRole:  ecsRole, 
   //     }
 
-  // Create an Accelerator
-const _accelerator = new globalaccelerator.Accelerator(this, `Accelerator${id}`,{
-      enabled: true
-    });
-
 const _domainZone = cdk.aws_route53.HostedZone.fromLookup(this,
       'madhouse-hostedzone',{domainName: 'madhousewallet.com',
       }
@@ -108,24 +100,9 @@ const serviceProps = {
       const service = new ecs_patterns.ApplicationLoadBalancedFargateService(this, `fargate-service${id}`,serviceProps );
       service.service.connections.allowFrom(ec2.Peer.anyIpv4(), ec2.Port.tcp(80));
       service.service.connections.allowFrom(ec2.Peer.anyIpv4(), ec2.Port.tcp(443));
-      
-      // Create a Listener
-      const _listener = _accelerator.addListener(`Listener${id}`, {
-        portRanges: [
-              {
-                fromPort: 443,
-              },
-              {
-                fromPort: 80,
-              },
-        ],});
-
-      _listener.addEndpointGroup(`Group${id}`, {
-      endpoints: [new ga_endpoints.ApplicationLoadBalancerEndpoint(service.loadBalancer)],
-      });
 
         // CloudFront distribution
- // const distribution = 
+  const distribution = 
   new cloudfront.Distribution(this, `SiteDistribution${id}`, {
         defaultBehavior: {
           origin:  new cloudfront_origins.LoadBalancerV2Origin(service.loadBalancer)
@@ -133,67 +110,13 @@ const serviceProps = {
         })
 
         //Latency based A Record Routing
-      //   new cdk.aws_route53.ARecord(this, `cloudfrontDNS${id}`, {
-      //     zone: _domainZone,
-      //     recordName: _domainName, 
-      //     target: cdk.aws_route53.RecordTarget.fromAlias(new cdk.aws_route53_targets.CloudFrontTarget(distribution)),
-      //     region: 'us-west-1',
-      //     ttl: cdk.Duration.seconds(3600)
-      //   });
-
-
-      // new cdk.aws_route53.ARecord(this, `albDNS${id}`, {
-      //   zone: _domainZone,
-      //   recordName: _domainName, 
-      //   target: cdk.aws_route53.RecordTarget.fromAlias(new cdk.aws_route53_targets.LoadBalancerTarget(service.loadBalancer)),
-      //   region: 'us-east-1',
-      //   ttl: cdk.Duration.seconds(3600)
-      // });
-
-      // new cdk.aws_route53.ARecord(this, `gaDNS${id}`, {
-      //   zone: _domainZone,
-      //   recordName: _domainName, 
-      //   target: cdk.aws_route53.RecordTarget.fromAlias(new cdk.aws_route53_targets.GlobalAcceleratorTarget(_accelerator)),
-      //   region: 'af-south-1',
-      //   ttl: cdk.Duration.seconds(3600)
-      // });
-
-      // new cr.AwsCustomResource(this, "ChangeResourceRecordSets", {
-      //   installLatestAwsSdk: false, // if false, lambda uses the preinstalled SDK (faster)
-      //   timeout: cdk.Duration.minutes(5), // default is 2 minutes - may need more time
-      //   onCreate: {
-      //     service: "Route53",
-      //     action: "changeResourceRecordSets",
-      //     parameters: {
-      //       HostedZoneId: _domainZone.hostedZoneId,
-      //       ChangeBatch: {
-      //         Comment: "Set a 1 hour TTL",
-      //         Changes: [
-      //           {
-      //             Action: "UPSERT",
-      //             ResourceRecordSet: {
-      //               Name: _domainZone.zoneName,
-      //               Type: "A",
-      //               TTL: cdk.Duration.seconds(3600),
-      //               ResourceRecords: [
-      //                 {
-      //                   Value: _domainZone.zoneName,
-      //                 },
-      //               ],
-      //             },
-      //           },
-      //         ],
-      //       },
-      //     },
-      //     physicalResourceId: cr.PhysicalResourceId.of(
-      //       `ChangeResourceRecordSets-${_domainZone.hostedZoneId}`
-      //     ),
-      //   },
-      //   policy: cr.AwsCustomResourcePolicy.fromSdkCalls({
-      //     resources: [_domainZone.hostedZoneArn],
-      //   }),
-      // });
-
+        new cdk.aws_route53.ARecord(this, `cloudfrontDNS${id}`, {
+          zone: _domainZone,
+          recordName: _domainName, 
+          target: cdk.aws_route53.RecordTarget.fromAlias(new cdk.aws_route53_targets.CloudFrontTarget(distribution)),
+          region: 'us-east-1',
+          ttl: cdk.Duration.seconds(3600)
+        });
 
     }
   }
