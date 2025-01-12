@@ -96,28 +96,25 @@ const serviceProps = {
         taskImageOptions: _taskImageOptions,
       }
 
-      //Create Service
-      const _service = new ecs_patterns.ApplicationLoadBalancedFargateService(this, `fargate-service${id}`,serviceProps );
-      _service.service.connections.allowFrom(ec2.Peer.anyIpv4(), ec2.Port.tcp(80));
-      _service.service.connections.allowFrom(ec2.Peer.anyIpv4(), ec2.Port.tcp(443));
+//Create Service
+const _service = new ecs_patterns.ApplicationLoadBalancedFargateService(this, `fargate-service${id}`,serviceProps );
 
-        // CloudFront distribution
-  const distribution = 
-  new cloudfront.Distribution(this, `SiteDistribution${id}`, {
-        defaultBehavior: {
-          origin:  new cloudfront_origins.LoadBalancerV2Origin(_service.loadBalancer)
-        }
-        })
+// CloudFront distribution
+const distribution = 
+new cloudfront.Distribution(this, `SiteDistribution${id}`, {
+      defaultBehavior: {
+        origin:  new cloudfront_origins.LoadBalancerV2Origin(_service.loadBalancer)
+      }
+      })
 
-        //Latency based A Record Routing
-        new cdk.aws_route53.ARecord(this, `cloudfrontDNS${id}`, {
-          zone: _domainZone,
-          recordName: _domainName, 
-          target: cdk.aws_route53.RecordTarget.fromAlias(new cdk.aws_route53_targets.CloudFrontTarget(distribution)),
-          ttl: cdk.Duration.seconds(3600)
-        });
+//Create A Record Routing
+new cdk.aws_route53.ARecord(this, `cloudfrontDNS${id}`, {
+      zone: _domainZone,
+      recordName: _domainName, 
+      target: cdk.aws_route53.RecordTarget.fromAlias(new cdk.aws_route53_targets.CloudFrontTarget(distribution))
+    });
 
-    }
+  }
   }
 
 const app = new cdk.App();
