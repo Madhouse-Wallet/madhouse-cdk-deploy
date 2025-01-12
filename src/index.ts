@@ -135,7 +135,8 @@ const serviceProps = {
           zone: _domainZone,
           recordName: _domainName, 
           target: cdk.aws_route53.RecordTarget.fromAlias(new cdk.aws_route53_targets.CloudFrontTarget(distribution)),
-          region: 'us-west-1'
+          region: 'us-west-1',
+          ttl: cdk.Duration.seconds(3600)
         });
 
 
@@ -143,14 +144,16 @@ const serviceProps = {
         zone: _domainZone,
         recordName: _domainName, 
         target: cdk.aws_route53.RecordTarget.fromAlias(new cdk.aws_route53_targets.LoadBalancerTarget(service.loadBalancer)),
-        region: 'us-east-1'
+        region: 'us-east-1',
+        ttl: cdk.Duration.seconds(3600)
       });
 
       new cdk.aws_route53.ARecord(this, `gaDNS${id}`, {
         zone: _domainZone,
         recordName: _domainName, 
         target: cdk.aws_route53.RecordTarget.fromAlias(new cdk.aws_route53_targets.GlobalAcceleratorTarget(_accelerator)),
-        region: 'af-south-1'
+        region: 'af-south-1',
+        ttl: cdk.Duration.seconds(3600)
       });
     }
   }
