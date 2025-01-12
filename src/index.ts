@@ -10,6 +10,7 @@ import ga_endpoints = require('aws-cdk-lib/aws-globalaccelerator-endpoints');
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as cloudfront_origins from 'aws-cdk-lib/aws-cloudfront-origins';
+//import { custom_resources as cr } from "aws-cdk-lib";
 
 class MadhouseFargate extends cdk.Stack {
   constructor(scope: cdk.App, 
@@ -124,7 +125,7 @@ const serviceProps = {
       });
 
         // CloudFront distribution
-  const distribution = 
+ // const distribution = 
   new cloudfront.Distribution(this, `SiteDistribution${id}`, {
         defaultBehavior: {
           origin:  new cloudfront_origins.LoadBalancerV2Origin(service.loadBalancer)
@@ -132,30 +133,68 @@ const serviceProps = {
         })
 
         //Latency based A Record Routing
-        new cdk.aws_route53.ARecord(this, `cloudfrontDNS${id}`, {
-          zone: _domainZone,
-          recordName: _domainName, 
-          target: cdk.aws_route53.RecordTarget.fromAlias(new cdk.aws_route53_targets.CloudFrontTarget(distribution)),
-          region: 'us-west-1',
-          ttl: cdk.Duration.seconds(3600)
-        });
+      //   new cdk.aws_route53.ARecord(this, `cloudfrontDNS${id}`, {
+      //     zone: _domainZone,
+      //     recordName: _domainName, 
+      //     target: cdk.aws_route53.RecordTarget.fromAlias(new cdk.aws_route53_targets.CloudFrontTarget(distribution)),
+      //     region: 'us-west-1',
+      //     ttl: cdk.Duration.seconds(3600)
+      //   });
 
 
-      new cdk.aws_route53.ARecord(this, `albDNS${id}`, {
-        zone: _domainZone,
-        recordName: _domainName, 
-        target: cdk.aws_route53.RecordTarget.fromAlias(new cdk.aws_route53_targets.LoadBalancerTarget(service.loadBalancer)),
-        region: 'us-east-1',
-        ttl: cdk.Duration.seconds(3600)
-      });
+      // new cdk.aws_route53.ARecord(this, `albDNS${id}`, {
+      //   zone: _domainZone,
+      //   recordName: _domainName, 
+      //   target: cdk.aws_route53.RecordTarget.fromAlias(new cdk.aws_route53_targets.LoadBalancerTarget(service.loadBalancer)),
+      //   region: 'us-east-1',
+      //   ttl: cdk.Duration.seconds(3600)
+      // });
 
-      new cdk.aws_route53.ARecord(this, `gaDNS${id}`, {
-        zone: _domainZone,
-        recordName: _domainName, 
-        target: cdk.aws_route53.RecordTarget.fromAlias(new cdk.aws_route53_targets.GlobalAcceleratorTarget(_accelerator)),
-        region: 'af-south-1',
-        ttl: cdk.Duration.seconds(3600)
-      });
+      // new cdk.aws_route53.ARecord(this, `gaDNS${id}`, {
+      //   zone: _domainZone,
+      //   recordName: _domainName, 
+      //   target: cdk.aws_route53.RecordTarget.fromAlias(new cdk.aws_route53_targets.GlobalAcceleratorTarget(_accelerator)),
+      //   region: 'af-south-1',
+      //   ttl: cdk.Duration.seconds(3600)
+      // });
+
+      // new cr.AwsCustomResource(this, "ChangeResourceRecordSets", {
+      //   installLatestAwsSdk: false, // if false, lambda uses the preinstalled SDK (faster)
+      //   timeout: cdk.Duration.minutes(5), // default is 2 minutes - may need more time
+      //   onCreate: {
+      //     service: "Route53",
+      //     action: "changeResourceRecordSets",
+      //     parameters: {
+      //       HostedZoneId: _domainZone.hostedZoneId,
+      //       ChangeBatch: {
+      //         Comment: "Set a 1 hour TTL",
+      //         Changes: [
+      //           {
+      //             Action: "UPSERT",
+      //             ResourceRecordSet: {
+      //               Name: _domainZone.zoneName,
+      //               Type: "A",
+      //               TTL: cdk.Duration.seconds(3600),
+      //               ResourceRecords: [
+      //                 {
+      //                   Value: _domainZone.zoneName,
+      //                 },
+      //               ],
+      //             },
+      //           },
+      //         ],
+      //       },
+      //     },
+      //     physicalResourceId: cr.PhysicalResourceId.of(
+      //       `ChangeResourceRecordSets-${_domainZone.hostedZoneId}`
+      //     ),
+      //   },
+      //   policy: cr.AwsCustomResourcePolicy.fromSdkCalls({
+      //     resources: [_domainZone.hostedZoneArn],
+      //   }),
+      // });
+
+
     }
   }
 
