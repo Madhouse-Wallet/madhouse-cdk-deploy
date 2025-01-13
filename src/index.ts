@@ -19,22 +19,22 @@ class MadhouseFargate extends cdk.Stack {
     super(scope, id, props);
     
     // Create VPC and Fargate Cluster
-const vpc = new ec2.Vpc(this, 'Vpc', { natGateways: 1 });
+const _vpc = new ec2.Vpc(this, 'Vpc', { natGateways: 1 });
 
-const _taskSubnets = { subnets:vpc.publicSubnets }
+const _taskSubnets = { subnets: _vpc.publicSubnets }
 
-const repository =  ecr.Repository.fromRepositoryName(this, 'Repository', 
+const _repository =  ecr.Repository.fromRepositoryName(this, 'Repository', 
         'cdk-hnb659fds-container-assets-145023121234-us-east-1',
       );
 
-const ecsRole= iam.Role.fromRoleArn(this, 'ecsRole',
+const _ecsRole= iam.Role.fromRoleArn(this, 'ecsRole',
         'arn:aws:iam::145023121234:role/madhouse-ecs-role',{
           mutable: true,
         });
-      repository.grantPull(ecsRole);
+      _repository.grantPull(_ecsRole);
 
-const branch = process.env.DEV_BRANCH || 'main';
-const commit = process.env.COMMIT || '';
+const _branch = process.env.DEV_BRANCH || 'main';
+const _commit = process.env.COMMIT || '';
 const _NEXT_PUBLIC_AWS_S3_ACCESS_KEY = process.env.NEXT_PUBLIC_AWS_S3_ACCESS_KEY || '';
 const _NEXT_PUBLIC_AWS_S3_REGION = process.env.NEXT_PUBLIC_AWS_S3_REGION || '';
 const _NEXT_PUBLIC_AWS_S3_SECRET_KEY = process.env.NEXT_PUBLIC_AWS_S3_SECRET_KEY || '';
@@ -44,8 +44,8 @@ const _NEXT_PUBLIC_EMAIL = process.env.NEXT_PUBLIC_EMAIL || '';
     image: ecs.ContainerImage.fromDockerImageAsset(
       new DockerImageAsset(this, `madhouse-image${id}`, {
       buildArgs:{
-        BRANCH: branch,
-        COMMIT: commit,
+        BRANCH: _branch,
+        COMMIT: _commit,
         NEXT_PUBLIC_AWS_S3_ACCESS_KEY: _NEXT_PUBLIC_AWS_S3_ACCESS_KEY,
         NEXT_PUBLIC_AWS_S3_REGION: _NEXT_PUBLIC_AWS_S3_REGION,
         NEXT_PUBLIC_AWS_S3_SECRET_KEY: _NEXT_PUBLIC_AWS_S3_SECRET_KEY,
@@ -57,8 +57,8 @@ const _NEXT_PUBLIC_EMAIL = process.env.NEXT_PUBLIC_EMAIL || '';
       cacheDisabled: true,
       extraHash: String(Math.floor(Math.random() * (10000 - 1)) + 1)
     })),
-    taskRole:  ecsRole,
-    executionRole:  ecsRole, 
+    taskRole:  _ecsRole,
+    executionRole:  _ecsRole, 
   }
 
   // const __taskImageOptions = {
@@ -76,8 +76,8 @@ const _domainZone = cdk.aws_route53.HostedZone.fromLookup(this,
 const _cert = Certificate.fromCertificateArn(this,
      `madhouse-cert${id}`,cert )
 
-const serviceProps = {
-        vpc: vpc,
+const _serviceProps = {
+        vpc: _vpc,
 
         memoryLimitMiB: 4096,
         desiredCount: 1,
@@ -97,13 +97,19 @@ const serviceProps = {
       }
 
 //Create Service
-const _service = new ecs_patterns.ApplicationLoadBalancedFargateService(this, `fargate-service${id}`,serviceProps );
+const _service = new ecs_patterns.ApplicationLoadBalancedFargateService(this, `fargate-service${id}`,_serviceProps );
 
 // CloudFront distribution
-const distribution = 
+const _distribution = 
 new cloudfront.Distribution(this, `SiteDistribution${id}`, {
-      defaultBehavior: {
-        origin:  new cloudfront_origins.LoadBalancerV2Origin(_service.loadBalancer)
+    certificate: _cert,
+    domainNames: [_domainName],  
+    defaultBehavior: {
+        origin:  new cloudfront_origins.LoadBalancerV2Origin(_service.loadBalancer),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS, // Redirect HTTP to HTTPS for the viewer.
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+        cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED, // Cache everything if you don't need caching
+        originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER, // You can adjust this if needed
       }
       })
 
@@ -111,7 +117,7 @@ new cloudfront.Distribution(this, `SiteDistribution${id}`, {
 new cdk.aws_route53.ARecord(this, `cloudfrontDNS${id}`, {
       zone: _domainZone,
       recordName: _domainName, 
-      target: cdk.aws_route53.RecordTarget.fromAlias(new cdk.aws_route53_targets.CloudFrontTarget(distribution))
+      target: cdk.aws_route53.RecordTarget.fromAlias(new cdk.aws_route53_targets.CloudFrontTarget(_distribution))
     });
 
   }
