@@ -19,7 +19,11 @@ class MadhouseFargate extends cdk.Stack {
     super(scope, id, props);
     
     // Create VPC and Fargate Cluster
-const _vpc = new ec2.Vpc(this, 'Vpc');
+const _vpc = new ec2.Vpc(this, 'Vpc', {
+        subnetConfiguration: [
+          { cidrMask: 23, name: 'Public', subnetType: ec2.SubnetType.PUBLIC }
+        ]
+      });
 
 const _taskSubnets = { subnets: _vpc.publicSubnets }
 
