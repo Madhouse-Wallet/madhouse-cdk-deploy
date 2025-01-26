@@ -85,7 +85,7 @@ const _serviceProps = {
 
         memoryLimitMiB: 4096,
         desiredCount: 1,
-        cpu: 2048,
+        cpu: 1024,
         ephemeralStorageGiB: 21,
           
         certificate:_cert,
