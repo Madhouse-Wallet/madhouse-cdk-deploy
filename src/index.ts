@@ -83,7 +83,7 @@ const _cert = Certificate.fromCertificateArn(this,
 const _serviceProps = {
         vpc: _vpc,
 
-        memoryLimitMiB: 4096,
+        memoryLimitMiB: 3072,
         desiredCount: 1,
         cpu: 1024,
         ephemeralStorageGiB: 21,
