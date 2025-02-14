@@ -55,7 +55,7 @@ RUN if [ "$COMMIT" != '' ]; then \
 
 # Step 7: Install dependencies for the Next.js application
 RUN npm install @keep-network/tbtc-v2.ts --legacy-peer-deps
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Step 9: Expose port 80 for the application
 EXPOSE 80
