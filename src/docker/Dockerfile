@@ -55,10 +55,12 @@ RUN if [ "$COMMIT" != '' ]; then \
 
 # Step 7: Install dependencies for the Next.js application
 RUN npm install @keep-network/tbtc-v2.ts --legacy-peer-deps
+RUN npm install sharp
 RUN npm install --legacy-peer-deps
+RUN npm run build
 
 # Step 9: Expose port 80 for the application
 EXPOSE 80
 
 # Step 10: Start the Next.js application in production mode on port 80
-CMD npm run dev -- --port 80
+CMD npm run start -- --port 80
